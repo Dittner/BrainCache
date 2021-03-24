@@ -6,6 +6,7 @@
 //
 
 import Combine
+import SwiftUI
 
 class Folder: DomainEntity, ObservableObject {
     @Published var title: String
@@ -25,17 +26,35 @@ class Folder: DomainEntity, ObservableObject {
         $title
             .removeDuplicates()
             .dropFirst()
-            .sink { value in
+            .sink { _ in
                 self.dispatcher.notify(.entityStateChanged(entity: self))
             }
             .store(in: &disposeBag)
-        
+
         $selectedFileUID
             .removeDuplicates()
             .dropFirst()
-            .sink { value in
+            .sink { _ in
                 self.dispatcher.notify(.entityStateChanged(entity: self))
             }
             .store(in: &disposeBag)
+    }
+
+    func createTextFile() -> File {
+        File(uid: UID(), folderUID: uid, title: "New File", body: TextFileBody(text: ""), useMonoFont: false, dispatcher: dispatcher)
+    }
+
+    func createTableFile(columnCount: Int) -> File {
+        var headers: [TableHeader] = []
+        let row1: TableRow = TableRow(cells: [])
+        let row2: TableRow = TableRow(cells: [])
+
+        for i in 0 ... columnCount - 1 {
+            headers.append(TableHeader(title: "Header \(i + 1)", ratio: 1.0 / CGFloat(columnCount)))
+            row1.cells.append(TableCell(text: "R1_C\(i + 1)"))
+            row2.cells.append(TableCell(text: "R2_C\(i + 1)"))
+        }
+
+        return File(uid: UID(), folderUID: uid, title: "New Table", body: TableFileBody(headers: headers, rows: [row1, row2]), useMonoFont: false, dispatcher: dispatcher)
     }
 }

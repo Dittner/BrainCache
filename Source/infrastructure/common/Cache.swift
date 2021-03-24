@@ -12,16 +12,8 @@ enum CacheKey: String {
 }
 
 class Cache {
-    static func write(key: CacheKey, value: String) {
-        UserDefaults.standard.set(value, forKey: key.rawValue)
-    }
-
     static func write(key: CacheKey, value: UID) {
         UserDefaults.standard.set(value, forKey: key.rawValue)
-    }
-
-    static func readString(key: CacheKey) -> String? {
-        UserDefaults.standard.object(forKey: key.rawValue) as? String
     }
 
     static func readUID(key: CacheKey) -> UID? {

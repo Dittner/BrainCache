@@ -13,7 +13,6 @@ enum StorageDirectory: String {
     case logs
     case folders
     case files
-    case tables
 }
 
 class FileSystemAPI {

@@ -18,5 +18,8 @@ struct BrainCacheApp: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }.frame(minWidth: 1550, idealWidth: 1550, maxWidth: .infinity, minHeight: 700, idealHeight: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(Colors.appBG.color)
+        .onTapGesture {
+            EditableTextManager.shared.isEditing = false
+        }
     }
 }

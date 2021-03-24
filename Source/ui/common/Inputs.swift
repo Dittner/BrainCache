@@ -63,55 +63,30 @@ struct NSTextEditor: NSViewControllerRepresentable {
 
     func updateNSViewController(_ nsViewController: EditorController, context: Context) {
         let textView = nsViewController.textView
+        textView.curHighlightedText = highlightedText
+        textView.string = text
 
-        if text != textView.string || textView.curHighlightedText != highlightedText {
-            textView.curHighlightedText = highlightedText
-            textView.string = text
+        let attributedStr = NSMutableAttributedString(string: text)
 
-            let attributedStr = NSMutableAttributedString(string: text)
+        attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: text.count))
 
-            attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: text.count))
+        let style = getStyle()
 
-            let style = getStyle()
+        attributedStr.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: NSRange(location: 0, length: text.count))
 
-            attributedStr.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: NSRange(location: 0, length: text.count))
+        textView.defaultParagraphStyle = style
 
-            textView.defaultParagraphStyle = style
-
-            if !highlightedText.isEmpty {
-                let ranges = text.ranges(of: highlightedText, options: .caseInsensitive)
-                for r in ranges {
-                    attributedStr.addAttribute(NSAttributedString.Key.backgroundColor, value: Colors.textHighlightBG, range: NSRange(r, in: highlightedText))
-                    //attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
-                }
+        if !highlightedText.isEmpty {
+            let ranges = text.ranges(of: highlightedText, options: .caseInsensitive)
+            for r in ranges {
+                attributedStr.addAttribute(NSAttributedString.Key.backgroundColor, value: Colors.textHighlightBG, range: NSRange(r, in: highlightedText))
             }
-
-            textView.textStorage?.setAttributedString(attributedStr)
-
-            textView.font = font
-            textView.textColor = textColor
-
-            // context.coordinator.shouldUpdateText = false
-            // context.coordinator.shouldUpdateText = true
         }
 
-//        let layoutManager: NSLayoutManager = nsViewController.textView.layoutManager!
-//        let numberOfGlyphs = layoutManager.numberOfGlyphs
-//        var index: Int = 0
-//        var lineRange = NSRange(location: NSNotFound, length: 0)
-//        var numberOfLines: Int = 0
-//
-//        while index < numberOfGlyphs {
-//            layoutManager.lineFragmentRect(forGlyphAt: index, effectiveRange: &lineRange)
-//            index = NSMaxRange(lineRange)
-//            numberOfLines += 1
-//        }
-//
-//        if nsViewController.textView.string.last == "\n" {
-//            numberOfLines += 1
-//        }
-//
-//        print("numberOfLines = \(numberOfLines)")
+        textView.textStorage?.setAttributedString(attributedStr)
+
+        textView.font = font
+        textView.textColor = textColor
     }
 
     func getStyle() -> NSMutableParagraphStyle {
@@ -127,7 +102,7 @@ struct NSTextEditor: NSViewControllerRepresentable {
 
         return style
     }
-    
+
     class Coordinator: NSObject, NSTextViewDelegate {
         var parent: NSTextEditor
 
@@ -148,30 +123,125 @@ struct NSTextEditor: NSViewControllerRepresentable {
             return newSelectedCharRange
         }
     }
-
 }
 
-class Coordinator2: NSObject, NSTextStorageDelegate {
-    private var parent: NSTextEditor
-    var shouldUpdateText = true
+class EditableTextManager: ObservableObject {
+    static var shared: EditableTextManager = EditableTextManager()
+    var ownerUID: UID = UID()
+    @Published var editingText: String = ""
+    @Published var isEditing: Bool = false
+}
 
-    init(_ parent: NSTextEditor) {
-        self.parent = parent
+struct EditableText: View {
+    @ObservedObject private var notifier = EditableTextManager.shared
+    let text: String
+    let uid: UID
+    let alignment: Alignment
+    let useMonoFont: Bool
+    let action: (String) -> Void
+
+    init(_ text: String, uid: UID, alignment: Alignment = .leading, useMonoFont: Bool = false, action: @escaping (String) -> Void) {
+        self.text = text
+        self.uid = uid
+        self.alignment = alignment
+        self.useMonoFont = useMonoFont
+        self.action = action
     }
 
-    func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
-        guard shouldUpdateText else {
-            return
+    var body: some View {
+        GeometryReader { proxy in
+            if notifier.isEditing && notifier.ownerUID == uid {
+                TextField("", text: $notifier.editingText, onEditingChanged: { editing in
+                    notifier.isEditing = editing
+                }, onCommit: {
+                    action(notifier.editingText)
+                    notifier.isEditing = false
+                })
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
+                    .padding(.horizontal, SizeConstants.padding)
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .border(Colors.focusColor.color)
+            } else {
+                Text(self.text)
+                    .lineLimit(1)
+                    .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
+                    .padding(.horizontal, SizeConstants.padding)
+                    .frame(width: proxy.size.width, height: proxy.size.height, alignment: alignment)
+                    .contentShape(Rectangle())
+                    .onTapGesture(count: 2) {
+                        notifier.editingText = text
+                        notifier.ownerUID = uid
+                        notifier.isEditing = true
+                    }
+            }
         }
-        let edited = textStorage.attributedSubstring(from: editedRange).string
-        let insertIndex = parent.text.utf16.index(parent.text.utf16.startIndex, offsetBy: editedRange.lowerBound)
-
-        func numberOfCharactersToDelete() -> Int {
-            editedRange.length - delta
-        }
-
-        let endIndex = parent.text.utf16.index(insertIndex, offsetBy: numberOfCharactersToDelete())
-        parent.text.replaceSubrange(insertIndex ..< endIndex, with: edited)
     }
 }
 
+struct EditableMultilineText: View {
+    @ObservedObject private var notifier = EditableTextManager.shared
+    let text: String
+    let uid: UID
+    let alignment: Alignment
+    let useMonoFont: Bool
+    let searchText: String
+    let action: (String) -> Void
+
+    init(_ text: String, uid: UID, alignment: Alignment = .leading, useMonoFont: Bool = false, searchText: String = "", action: @escaping (String) -> Void) {
+        self.text = text
+        self.uid = uid
+        self.alignment = alignment
+        self.useMonoFont = useMonoFont
+        self.searchText = searchText
+        self.action = action
+    }
+
+    var body: some View {
+        if notifier.isEditing && notifier.ownerUID == uid {
+            VStack(alignment: .trailing, spacing: 2) {
+                if useMonoFont {
+                    NSTextEditor(text: $notifier.editingText, font: NSFont(name: .mono, size: SizeConstants.fontSize), textColor: Colors.text, lineHeight: SizeConstants.fontLineHeight, highlightedText: searchText)
+                        .padding(.leading, SizeConstants.padding - 5)
+                        .frame(height: SizeConstants.listCellHeight * 8)
+                        .border(Colors.focusColor.color)
+                } else {
+                    NSTextEditor(text: $notifier.editingText, font: NSFont(name: .pragmatica, size: SizeConstants.fontSize), textColor: Colors.text, lineHeight: SizeConstants.fontLineHeight, highlightedText: searchText)
+                        .padding(.leading, SizeConstants.padding - 5)
+                        .frame(height: SizeConstants.listCellHeight * 8)
+                        .border(Colors.focusColor.color)
+                }
+
+                HStack(alignment: /*@START_MENU_TOKEN@*/ .center/*@END_MENU_TOKEN@*/, spacing: 2) {
+                    TextButton(text: "Cancel", textColor: Colors.appBG.color, bgColor: Colors.focusColor.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
+                        notifier.isEditing = false
+                    }
+                    .cornerRadius(2)
+
+                    TextButton(text: "Save", textColor: Colors.appBG.color, bgColor: Colors.focusColor.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), height: SizeConstants.listCellHeight, padding: 5) {
+                        action(notifier.editingText)
+                        notifier.isEditing = false
+                    }
+                    .cornerRadius(2)
+                }
+            }
+
+        } else {
+            Text(self.text)
+                .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
+                .padding(.vertical, 5)
+                .padding(.horizontal, SizeConstants.padding)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
+                .lineLimit(nil)
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) {
+                    notifier.editingText = text
+                    notifier.ownerUID = uid
+                    notifier.isEditing = true
+                }
+        }
+    }
+}

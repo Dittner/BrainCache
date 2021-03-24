@@ -29,12 +29,13 @@ class SizeConstants {
     static let folderListWidth: CGFloat = 300
     static let fileListWidth: CGFloat = 200
     static let searchBarWidth: CGFloat = 150
+    static let tableRowNumberWidth: CGFloat = 50
     static let appHeaderHeight: CGFloat = 25
     static let listCellHeight: CGFloat = 25
     static let fontSize: CGFloat = 13
     static let fontLineHeight: CGFloat = 20
     static let iconSize: CGFloat = 12
-    static let padding: CGFloat = 15
+    static let padding: CGFloat = 10
 }
 
 

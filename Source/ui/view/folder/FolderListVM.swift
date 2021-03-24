@@ -13,7 +13,6 @@ class FolderListVM: ObservableObject {
 
     @Published var folders: [Folder] = []
     @Published var selectedFolder: Folder?
-    @Published var editingFolder: Folder?
 
     private var disposeBag: Set<AnyCancellable> = []
     private let context: BrainCacheContext
@@ -33,6 +32,8 @@ class FolderListVM: ObservableObject {
         $selectedFolder
             .sink { folder in
                 self.context.menuAPI.isDeleteFolderEnabled = folder != nil
+                self.context.menuAPI.isCreateTableEnabled = folder != nil
+                self.context.menuAPI.isCreateTextFileEnabled = folder != nil
             }.store(in: &disposeBag)
 
         context.menuAPI.subject
@@ -42,6 +43,12 @@ class FolderListVM: ObservableObject {
                     if let folder = self.selectedFolder {
                         self.context.entityRemover.removeFolderWithFiles(folder)
                     }
+                case .createFolder:
+                    self.createFolder()
+                case .createTextFile:
+                    self.createTextFile()
+                case let .createTable(columns):
+                    self.createTableFile(with: columns)
                 default: break
                 }
             }.store(in: &disposeBag)
@@ -49,8 +56,7 @@ class FolderListVM: ObservableObject {
 
     var firstLaunch: Bool = true
     private func setupLastOpenedFolder() {
-        guard let folderUID = Cache.readUID(key: .lastOpenedFolderUID) else { return }
-        if let folder = folders.first(where: { $0.uid == folderUID }) {
+        if let folderUID = Cache.readUID(key: .lastOpenedFolderUID), let folder = folders.first(where: { $0.uid == folderUID }) {
             selectFolder(folder)
         } else if folders.count > 0 {
             selectFolder(folders[0])
@@ -59,32 +65,32 @@ class FolderListVM: ObservableObject {
         }
     }
 
-    func addNewFolder() {
+    private func createFolder() {
         context.foldersRepo.write(Folder(uid: UID(), title: "New Folder", dispatcher: context.dispatcher))
+    }
+
+    private func createTextFile() {
+        if let folder = selectedFolder {
+            let newFile = folder.createTextFile()
+            context.filesRepo.write(newFile)
+        }
+    }
+
+    private func createTableFile(with columnCount: Int) {
+        if let folder = selectedFolder {
+            let newTable = folder.createTableFile(columnCount: columnCount)
+            context.filesRepo.write(newTable)
+        }
     }
 
     func selectFolder(_ f: Folder) {
         if f != selectedFolder {
             selectedFolder = f
-            editingFolder = nil
             Cache.write(key: .lastOpenedFolderUID, value: f.uid)
         }
     }
-    
+
     func deselectFolder() {
         selectedFolder = nil
-        editingFolder = nil
-    }
-
-    func startEditing(f: Folder) {
-        if f != editingFolder {
-            selectedFolder = f
-            editingFolder = f
-            Cache.write(key: .lastOpenedFolderUID, value: f.uid)
-        }
-    }
-
-    func stopEditing() {
-        editingFolder = nil
     }
 }

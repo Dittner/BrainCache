@@ -14,7 +14,6 @@ class FileListVM: ObservableObject {
     @Published var files: [File] = []
     @Published var selectedFolder: Folder?
     @Published var selectedFile: File?
-    @Published var editingFile: File?
 
     private var disposeBag: Set<AnyCancellable> = []
     private let context: BrainCacheContext
@@ -70,17 +69,9 @@ class FileListVM: ObservableObject {
         }
     }
 
-    func addNewFile() {
-        if let folder = selectedFolder {
-            let newFile = File(uid: UID(), folderUID: folder.uid, title: "New File", content: "", useMonoFont: false, dispatcher: context.dispatcher)
-            context.filesRepo.write(newFile)
-        }
-    }
-
     func selectFile(_ f: File) {
-        if f != selectedFile {
+        if f.uid != selectedFile?.uid {
             selectedFile = f
-            editingFile = nil
             selectedFolder?.selectedFileUID = f.uid
         }
     }
@@ -88,18 +79,6 @@ class FileListVM: ObservableObject {
     func deselectFile() {
         if selectedFile != nil {
             selectedFile = nil
-            editingFile = nil
         }
-    }
-
-    func startEditing(f: File) {
-        if f != editingFile {
-            selectFile(f)
-            editingFile = f
-        }
-    }
-
-    func stopEditing() {
-        editingFile = nil
     }
 }

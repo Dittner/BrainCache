@@ -12,6 +12,11 @@ import SwiftUI
 class AppDelegate: NSObject, NSApplicationDelegate {
     var window: NSWindow!
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        UserDefaults.standard.set(true, forKey: "NSDisabledDictationMenuItem")
+        UserDefaults.standard.set(true, forKey: "NSDisabledCharacterPaletteMenuItem")
+    }
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         BrainCacheContext.shared.run()
 
@@ -34,7 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Insert code here to tear down your application
     }
 
-    // Menu
+    // Menu Edit
 
     @IBOutlet var deleteFileMenu: NSMenuItem!
     @IBOutlet var deleteFolderMenu: NSMenuItem!
@@ -47,9 +52,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBAction func menuDeleteFile(_ sender: Any) {
         BrainCacheContext.shared.menuAPI.subject.send(.deleteFile)
     }
-    
+
     @IBAction func menuMonoFont(_ sender: Any) {
         monoFontMenu.state = monoFontMenu.state == .off ? .on : .off
         BrainCacheContext.shared.menuAPI.subject.send(.monoFontSelected(value: monoFontMenu.state == .on))
+    }
+
+    // Menu File
+
+    @IBOutlet var createTextFileMenu: NSMenuItem!
+    @IBOutlet var createTableMenu: NSMenuItem!
+
+    @IBAction func createTextFile(_ sender: Any) {
+        BrainCacheContext.shared.menuAPI.subject.send(.createTextFile)
+    }
+
+    @IBAction func createFolder(_ sender: Any) {
+        BrainCacheContext.shared.menuAPI.subject.send(.createFolder)
+    }
+
+    @IBAction func createTable(_ sender: Any) {
+        if let menuItem = sender as? NSMenuItem {
+            let columns = Int(menuItem.title.filter { "0" ... "9" ~= $0 }) ?? 2
+            BrainCacheContext.shared.menuAPI.subject.send(.createTable(columns: columns))
+        }
     }
 }

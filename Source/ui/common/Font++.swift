@@ -17,6 +17,9 @@ enum FontIcon: String {
     case file = "\u{e905}"
     case search = "\u{e906}"
     case close = "\u{e907}"
+    case minus = "\u{e908}"
+    case list = "\u{e909}"
+    case sort = "\u{e90a}"
 }
 
 enum FontName: String {

@@ -24,7 +24,7 @@ func logErr(msg: String) {
 class Logger {
     private(set) static var shared: Logger?
 
-    private let keepLogsInDays: Int = 3
+    private let keepLogsInDays: Int = 2
     private var log: String = ""
     private var logFileURL: URL?
 
