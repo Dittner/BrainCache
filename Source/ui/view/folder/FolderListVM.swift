@@ -65,8 +65,10 @@ class FolderListVM: ObservableObject {
         }
     }
 
-    private func createFolder() {
-        context.foldersRepo.write(Folder(uid: UID(), title: "New Folder", dispatcher: context.dispatcher))
+    func createFolder() {
+        let newFolder = Folder(uid: UID(), title: "New Folder", dispatcher: context.dispatcher)
+        context.foldersRepo.write(newFolder)
+        selectFolder(newFolder)
     }
 
     private func createTextFile() {

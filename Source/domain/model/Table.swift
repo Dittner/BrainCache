@@ -11,10 +11,10 @@ import SwiftUI
 class TableFileBody: FileBody {
     var stateDidChange = CurrentValueSubject<Bool, Never>(false)
 
-    var headers: [TableHeader]
-    var rows: [TableRow]
-    var sortType: SortType
-    var sortByHeaderIndex: Int
+    private(set) var headers: [TableHeader]
+    private(set) var rows: [TableRow]
+    private(set) var sortType: SortType
+    private(set) var sortByHeaderIndex: Int
 
     private var disposeBag: Set<AnyCancellable> = []
     init(headers: [TableHeader], rows: [TableRow], sortType: SortType = .ascending, sortByHeaderIndex: Int = 0) {
@@ -22,6 +22,8 @@ class TableFileBody: FileBody {
         self.rows = rows
         self.sortType = sortType
         self.sortByHeaderIndex = sortByHeaderIndex
+        
+        sortRows()
     }
 
     func updateCell(_ cell: TableCell, with text: String) {
@@ -42,7 +44,24 @@ class TableFileBody: FileBody {
     func updateSorting(headerIndex: Int, type: SortType) {
         sortByHeaderIndex = headerIndex
         sortType = type
+        sortRows()
         stateDidChange.send(true)
+    }
+    
+    private func sortRows() {
+        if sortType == .ascending {
+            rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text < $1.cells[sortByHeaderIndex].text })
+        } else {
+            rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text > $1.cells[sortByHeaderIndex].text })
+        }
+    }
+    
+    func addNewRow() {
+        let row = TableRow(cells: [])
+        for _ in 0 ... headers.count - 1 {
+            row.cells.append(TableCell(text: ""))
+        }
+        rows.append(row)
     }
 }
 

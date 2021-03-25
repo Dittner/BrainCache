@@ -11,20 +11,24 @@ struct FolderListView: View {
     @ObservedObject private var vm = FolderListVM.shared
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .trailing, spacing: 0) {
             if vm.folders.count > 0 {
                 ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 1) {
+                    VStack(alignment: .trailing, spacing: 1) {
                         ForEach(vm.folders, id: \.id) { f in
                             FolderListCell(folder: f, isSelected: f == vm.selectedFolder) {
                                 vm.selectFolder(f)
                             }
                         }
-                    }
-                }
-            }
 
-            Spacer()
+                        TextButton(text: "New Folder", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
+                            self.vm.createFolder()
+                        }
+                    }
+                }.frame(maxHeight: .infinity)
+            } else {
+                Spacer()
+            }
         }
         .background(LinearGradient(gradient: Gradient(colors: Colors.folderListBG), startPoint: .top, endPoint: .bottom))
     }

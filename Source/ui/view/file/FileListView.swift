@@ -26,7 +26,7 @@ struct FileListView: View {
                 Spacer()
 
                 if let folder = vm.selectedFolder {
-                    SearchView(folder: folder)
+                    SearchInputView(folder: folder)
                 }
 
             }.frame(height: SizeConstants.appHeaderHeight)
@@ -84,6 +84,36 @@ struct FileListCell: View {
                     }
             )
         }
+    }
+}
+
+struct SearchInputView: View {
+    @ObservedObject private var vm = FileListVM.shared
+    @ObservedObject private var folder: Folder
+
+    init(folder: Folder) {
+        self.folder = folder
+    }
+
+    var body: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 5) {
+            Icon(name: .search, size: SizeConstants.iconSize)
+                .allowsHitTesting(false)
+                .padding(.leading, 5)
+
+            TextField("", text: $folder.search)
+                .textFieldStyle(PlainTextFieldStyle())
+                .font(Font.custom(.pragmatica, size: SizeConstants.fontSize))
+
+            if folder.search.count > 0 {
+                IconButton(name: .close, size: SizeConstants.iconSize, color: folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color, width: SizeConstants.iconSize + 10, height: SizeConstants.iconSize + 10) {
+                    folder.search = ""
+                }
+            }
+        }
+        .frame(width: SizeConstants.searchBarWidth, height: SizeConstants.appHeaderHeight)
+        .foregroundColor(folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color)
+        .background(Colors.black02.color)
     }
 }
 
@@ -189,32 +219,4 @@ struct TableFileBodyView: View {
     }
 }
 
-struct SearchView: View {
-    @ObservedObject private var vm = FileListVM.shared
-    @ObservedObject private var folder: Folder
 
-    init(folder: Folder) {
-        self.folder = folder
-    }
-
-    var body: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 5) {
-            Icon(name: .search, size: SizeConstants.iconSize)
-                .allowsHitTesting(false)
-                .padding(.leading, 5)
-
-            TextField("", text: $folder.search)
-                .textFieldStyle(PlainTextFieldStyle())
-                .font(Font.custom(.pragmatica, size: SizeConstants.fontSize))
-
-            if folder.search.count > 0 {
-                IconButton(name: .close, size: SizeConstants.iconSize, color: folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color, width: SizeConstants.iconSize + 10, height: SizeConstants.iconSize + 10) {
-                    folder.search = ""
-                }
-            }
-        }
-        .frame(width: SizeConstants.searchBarWidth, height: SizeConstants.appHeaderHeight)
-        .foregroundColor(folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color)
-        .background(Colors.black02.color)
-    }
-}

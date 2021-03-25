@@ -62,12 +62,18 @@ class GridController: ObservableObject {
         table.updateCell(cell, with: text)
     }
 
-    func addTableRow() {
-        let row = TableRow(cells: [])
-        for _ in 0 ... table.headers.count - 1 {
-            row.cells.append(TableCell(text: ""))
+    func updateSort(headerIndex: Int) {
+        if table.sortByHeaderIndex == headerIndex {
+            table.updateSorting(headerIndex: headerIndex, type: table.sortType == .ascending ? .descending : .ascending)
+        } else {
+            table.updateSorting(headerIndex: headerIndex, type: .ascending)
         }
-        table.rows.append(row)
+
+        updateGridView()
+    }
+
+    func addTableRow() {
+        table.addNewRow()
     }
 
     func updateGridView() {
@@ -87,12 +93,20 @@ struct GridHeaderView: View {
     var body: some View {
         GeometryReader { geometry in
             HStack(alignment: .center, spacing: 0) {
-                ForEach(gc.table.headers, id: \.uid) { header in
-                    EditableText(header.title, uid: header.uid, alignment: .center, useMonoFont: useMonoFont) { value in
-                        self.gc.updateHeader(header, title: value)
-                        self.gc.updateGridView()
+                ForEach(gc.table.headers.enumeratedArray(), id: \.offset) { index, header in
+                    ZStack(alignment: .leading) {
+                        EditableText(header.title, uid: header.uid, alignment: .center, useMonoFont: useMonoFont) { value in
+                            self.gc.updateHeader(header, title: value)
+                            self.gc.updateGridView()
+                        }
+
+                        IconButton(name: .sort, size: SizeConstants.fontSize, color: gc.table.sortByHeaderIndex == index ? Colors.textLight.color : Colors.textDark.color ) {
+                            self.gc.updateSort(headerIndex: index)
+                        }
+                        .rotationEffect(.degrees(gc.table.sortType == .ascending ? 180 : 0))
+                        .offset(x: header.ratio * geometry.size.width - 25)
                     }
-                    .foregroundColor(Colors.text.color)
+                    .foregroundColor(gc.table.sortByHeaderIndex == index ? Colors.textLight.color : Colors.textDark.color )
                     .frame(width: header.ratio * geometry.size.width, height: SizeConstants.listCellHeight)
                 }
             }.frame(height: SizeConstants.listCellHeight)
