@@ -33,6 +33,7 @@ class FolderListVM: ObservableObject {
             .sink { folder in
                 self.context.menuAPI.isDeleteFolderEnabled = folder != nil
                 self.context.menuAPI.isCreateTableEnabled = folder != nil
+                self.context.menuAPI.isCreateListEnabled = folder != nil
                 self.context.menuAPI.isCreateTextFileEnabled = folder != nil
             }.store(in: &disposeBag)
 
@@ -49,6 +50,8 @@ class FolderListVM: ObservableObject {
                     self.createTextFile()
                 case let .createTable(columns):
                     self.createTableFile(with: columns)
+                case let .createList(columns):
+                    self.createListFile(with: columns)
                 default: break
                 }
             }.store(in: &disposeBag)
@@ -75,13 +78,23 @@ class FolderListVM: ObservableObject {
         if let folder = selectedFolder {
             let newFile = folder.createTextFile()
             context.filesRepo.write(newFile)
+            FileListVM.shared.selectFile(newFile)
         }
     }
 
     private func createTableFile(with columnCount: Int) {
         if let folder = selectedFolder {
-            let newTable = folder.createTableFile(columnCount: columnCount)
-            context.filesRepo.write(newTable)
+            let newFile = folder.createTableFile(columnCount: columnCount)
+            context.filesRepo.write(newFile)
+            FileListVM.shared.selectFile(newFile)
+        }
+    }
+    
+    private func createListFile(with columnCount: Int) {
+        if let folder = selectedFolder {
+            let newFile = folder.createListFile(columnCount: columnCount)
+            context.filesRepo.write(newFile)
+            FileListVM.shared.selectFile(newFile)
         }
     }
 

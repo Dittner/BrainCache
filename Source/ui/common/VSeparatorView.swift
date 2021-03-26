@@ -16,7 +16,7 @@ struct VSeparatorView: View {
     }
 
     var body: some View {
-        Color.white.opacity(0.1)
+        Colors.separator.color
             .padding(.vertical, verticalPadding)
             .frame(width: 1)
             .frame(maxHeight: .infinity)

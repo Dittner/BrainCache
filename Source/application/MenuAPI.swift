@@ -34,6 +34,12 @@ class MenuAPI {
             appDelegate.createTableMenu.isEnabled = isCreateTableEnabled
         }
     }
+    
+    var isCreateListEnabled: Bool = false {
+        didSet {
+            appDelegate.createListMenu.isEnabled = isCreateListEnabled
+        }
+    }
 
     // Edit Menu
 
@@ -66,6 +72,7 @@ enum MenuAPIEvent {
     case createFolder
     case createTextFile
     case createTable(columns: Int)
+    case createList(columns: Int)
     case deleteFile
     case deleteFolder
     case monoFontSelected(value: Bool)

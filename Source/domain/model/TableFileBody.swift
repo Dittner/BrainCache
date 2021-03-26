@@ -16,7 +16,6 @@ class TableFileBody: FileBody {
     private(set) var sortType: SortType
     private(set) var sortByHeaderIndex: Int
 
-    private var disposeBag: Set<AnyCancellable> = []
     init(headers: [TableHeader], rows: [TableRow], sortType: SortType = .ascending, sortByHeaderIndex: Int = 0) {
         self.headers = headers
         self.rows = rows

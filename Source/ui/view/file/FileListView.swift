@@ -31,13 +31,16 @@ struct FileListView: View {
 
             }.frame(height: SizeConstants.appHeaderHeight)
                 .background(Colors.black02.color)
+                .zIndex(1)
 
             HSeparatorView()
 
             if let folder = vm.selectedFolder, let file = vm.selectedFile, let fileBody = file.body as? TextFileBody {
-                TextFileBodyView(file: file, fileBody: fileBody, folder: folder)
+                TextFileView(file: file, fileBody: fileBody, folder: folder)
             } else if let folder = vm.selectedFolder, let file = vm.selectedFile, let fileBody = file.body as? TableFileBody {
-                TableFileBodyView(file: file, fileBody: fileBody, folder: folder)
+                TableFileView(file: file, fileBody: fileBody, folder: folder)
+            } else if let folder = vm.selectedFolder, let file = vm.selectedFile, let fileBody = file.body as? ListFileBody {
+                ListFileView(file: file, fileBody: fileBody, folder: folder)
             } else {
                 Spacer()
             }
@@ -52,14 +55,15 @@ struct FileListCell: View {
     private let isSelected: Bool
 
     init(file: File, isSelected: Bool, didSelectAction: @escaping () -> Void) {
-        print("FileListCell, file: \(file.title)")
         self.file = file
         self.isSelected = isSelected
         self.didSelectAction = didSelectAction
     }
 
     private func getFileIcon() -> FontIcon {
-        return file.body is TableFileBody ? .table : .file
+        if file.body is TableFileBody { return .table }
+        if file.body is ListFileBody { return .list }
+        return .file
     }
 
     var body: some View {
@@ -96,14 +100,16 @@ struct SearchInputView: View {
     }
 
     var body: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 5) {
+        HStack(alignment: .center, spacing: 5) {
             Icon(name: .search, size: SizeConstants.iconSize)
                 .allowsHitTesting(false)
                 .padding(.leading, 5)
 
-            TextField("", text: $folder.search)
-                .textFieldStyle(PlainTextFieldStyle())
-                .font(Font.custom(.pragmatica, size: SizeConstants.fontSize))
+            EditableText(folder.search, uid: folder.searchUID, countClickActivation: 1) { value in
+                folder.search = value
+            }
+            .frame(height: SizeConstants.appHeaderHeight)
+            .frame(maxWidth: SizeConstants.searchBarWidth)
 
             if folder.search.count > 0 {
                 IconButton(name: .close, size: SizeConstants.iconSize, color: folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color, width: SizeConstants.iconSize + 10, height: SizeConstants.iconSize + 10) {
@@ -117,10 +123,11 @@ struct SearchInputView: View {
     }
 }
 
-struct TextFileBodyView: View {
+struct TextFileView: View {
     @ObservedObject private var file: File
-    @ObservedObject private var fileBody: TextFileBody
+    private let fileBody: TextFileBody
     @ObservedObject private var folder: Folder
+    @ObservedObject private var notifier = HeightDidChangeNotifier()
 
     init(file: File, fileBody: TextFileBody, folder: Folder) {
         self.file = file
@@ -129,21 +136,44 @@ struct TextFileBodyView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            if file.useMonoFont {
-                NSTextEditor(text: $fileBody.text, font: NSFont(name: .mono, size: SizeConstants.fontSize), textColor: Colors.text, lineHeight: SizeConstants.fontLineHeight, highlightedText: folder.search)
-                    .padding(.leading, SizeConstants.padding - 5)
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-            } else {
-                NSTextEditor(text: $fileBody.text, font: NSFont(name: .pragmatica, size: SizeConstants.fontSize), textColor: Colors.text, lineHeight: SizeConstants.fontLineHeight, highlightedText: folder.search)
-                    .padding(.leading, SizeConstants.padding - 5)
-                    .frame(width: geometry.size.width, height: geometry.size.height)
+        GeometryReader { proxy in
+            VScrollBar(uid: file.uid) {
+                TextFileBodyView(fileBody: fileBody, useMonoFont: file.useMonoFont, searchText: folder.search, width: proxy.size.width, minHeight: proxy.size.height)
             }
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
     }
 }
 
-struct TableFileBodyView: View {
+struct TextFileBodyView: View {
+    @ObservedObject private var fileBody: TextFileBody
+    @ObservedObject private var notifier = HeightDidChangeNotifier()
+    let useMonoFont: Bool
+    let searchText: String
+    let font: NSFont
+    let width: CGFloat
+    let minHeight: CGFloat
+
+    init(fileBody: TextFileBody, useMonoFont: Bool, searchText: String, width: CGFloat, minHeight: CGFloat) {
+        print("TextFileBodyView init, useMonoFont = \(useMonoFont)")
+        self.fileBody = fileBody
+        self.useMonoFont = useMonoFont
+        self.searchText = searchText
+        self.width = width
+        self.minHeight = minHeight
+        font = NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize)
+    }
+
+    var body: some View {
+        TextArea(text: $fileBody.text, height: $notifier.height, textColor: Colors.text, font: font, highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight, width: width - 2 * SizeConstants.padding)
+            .colorScheme(.dark)
+            .offset(x: -4)
+            .padding(.horizontal, SizeConstants.padding)
+            .frame(height: max(minHeight - 5, notifier.height))
+    }
+}
+
+struct TableFileView: View {
     @ObservedObject private var gc: GridController
     @ObservedObject private var file: File
     private let fileBody: TableFileBody
@@ -151,7 +181,7 @@ struct TableFileBodyView: View {
     private let scrollerWidth: CGFloat = 15
 
     init(file: File, fileBody: TableFileBody, folder: Folder) {
-        print("TableContentView init, use mono font = \(file.useMonoFont)!!!")
+        print("TableContentView init, use mono font = \(file.useMonoFont)")
         self.file = file
         self.fileBody = fileBody
         self.folder = folder
@@ -167,39 +197,41 @@ struct TableFileBodyView: View {
                 .offset(x: SizeConstants.tableRowNumberWidth)
                 .frame(width: root.size.width - scrollerWidth - SizeConstants.tableRowNumberWidth, height: SizeConstants.listCellHeight)
 
-            ScrollView(.vertical, showsIndicators: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/) {
-                GeometryReader { proxy in
-                    VStack(alignment: .trailing, spacing: 0) {
-                        ForEach(fileBody.rows.enumeratedArray(), id: \.offset) { rowIndex, row in
-                            HStack(alignment: .top, spacing: 0) {
-                                Text("\(rowIndex + 1)")
-                                    .lineLimit(1)
-                                    .font(Font.custom(file.useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
-                                    .foregroundColor(Colors.textDark.color)
-                                    .padding(.horizontal, SizeConstants.padding)
-                                    .padding(.top, 5)
-                                    .frame(width: SizeConstants.tableRowNumberWidth, alignment: .trailing)
+            VScrollBar(uid: file.uid) {
+                VStack(alignment: .trailing, spacing: 0) {
+                    ForEach(fileBody.rows.enumeratedArray(), id: \.offset) { rowIndex, row in
+                        HStack(alignment: .top, spacing: 0) {
+                            Text("\(rowIndex + 1)")
+                                .lineLimit(1)
+                                .font(Font.custom(file.useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
+                                .foregroundColor(Colors.textDark.color)
+                                .padding(.horizontal, SizeConstants.padding)
+                                .padding(.top, 5)
+                                .frame(width: SizeConstants.tableRowNumberWidth, alignment: .trailing)
 
-                                ForEach(row.cells.enumeratedArray(), id: \.offset) { index, cell in
-                                    EditableMultilineText(cell.text, uid: cell.uid, alignment: .leading, useMonoFont: file.useMonoFont) { value in
-                                        self.gc.updateCell(cell, text: value)
-                                        self.gc.updateGridView()
-                                    }
-                                    .foregroundColor(Colors.text.color)
-                                    .frame(width: fileBody.headers[index].ratio * (proxy.size.width - SizeConstants.tableRowNumberWidth))
+                            ForEach(row.cells.enumeratedArray(), id: \.offset) { index, cell in
+                                EditableMultilineText(cell.text, uid: cell.uid, alignment: .leading, useMonoFont: file.useMonoFont) { value in
+                                    self.gc.updateCell(cell, text: value)
+                                    self.gc.updateGridView()
                                 }
+                                .foregroundColor(Colors.text.color)
+                                .frame(width: fileBody.headers[index].ratio * (root.size.width - SizeConstants.tableRowNumberWidth - scrollerWidth))
                             }
-                            HSeparatorView()
+                            
+                            //Spacer()
                         }
-
-                        TextButton(text: "Add Row", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
-                            self.gc.addTableRow()
-                            self.gc.updateGridView()
-                        }
+                        HSeparatorView()
                     }
-                }
+
+                    TextButton(text: "Add Row", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
+                        self.gc.addTableRow()
+                        self.gc.updateGridView()
+                    }
+
+                    Spacer()
+                }.frame(width: root.size.width - scrollerWidth)
             }
-            .frame(width: root.size.width)
+            .frame(width: root.size.width, height: root.size.height - SizeConstants.listCellHeight)
             .padding(.top, SizeConstants.listCellHeight)
             .clipped()
 
@@ -219,4 +251,66 @@ struct TableFileBodyView: View {
     }
 }
 
+struct ListFileView: View {
+    @ObservedObject private var lc: ListController
+    @ObservedObject private var file: File
+    private let fileBody: ListFileBody
+    @ObservedObject private var folder: Folder
+    private let scrollerWidth: CGFloat = 15
 
+    init(file: File, fileBody: ListFileBody, folder: Folder) {
+        print("ListFileBodyView init, use mono font = \(file.useMonoFont)")
+        self.file = file
+        self.fileBody = fileBody
+        self.folder = folder
+        lc = ListController(list: fileBody)
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            VScrollBar(uid: file.uid) {
+                HStack(alignment: .top, spacing: 0) {
+                    ForEach(fileBody.columns, id: \.uid) { column in
+                        ListColumnCell(column: column, useMonoFont: file.useMonoFont, searchText: folder.search, width: column.ratio * (proxy.size.width - scrollerWidth), minHeight: proxy.size.height)
+                            .frame(width: column.ratio * (proxy.size.width - scrollerWidth))
+                    }
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+
+            VSeparatorView()
+                .offset(x: proxy.size.width - scrollerWidth)
+
+            ListLinesView(lc)
+                .frame(width: proxy.size.width - scrollerWidth)
+        }
+    }
+}
+
+struct ListColumnCell: View {
+    @ObservedObject private var column: ListColumn
+    @ObservedObject private var notifier = HeightDidChangeNotifier()
+    let useMonoFont: Bool
+    let searchText: String
+    let font: NSFont
+    let width: CGFloat
+    let minHeight: CGFloat
+
+    init(column: ListColumn, useMonoFont: Bool, searchText: String, width: CGFloat, minHeight: CGFloat) {
+        print("ListColumnCell init, useMonoFont = \(useMonoFont)")
+        self.column = column
+        self.useMonoFont = useMonoFont
+        self.searchText = searchText
+        self.width = width
+        self.minHeight = minHeight
+        font = NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize)
+    }
+
+    var body: some View {
+        TextArea(text: $column.text, height: $notifier.height, textColor: Colors.text, font: font, highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight, width: width - 2 * SizeConstants.padding)
+            .colorScheme(.dark)
+            .offset(x: -4)
+            .padding(.horizontal, SizeConstants.padding)
+            .frame(height: max(minHeight - 5, notifier.height))
+    }
+}

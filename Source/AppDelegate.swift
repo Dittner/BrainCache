@@ -31,7 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.isReleasedWhenClosed = false
         window.center()
         window.setFrameAutosaveName("Main Window")
-        window.contentView = NSHostingView(rootView: app)
+        window.contentView = AppHostingView(rootView: app)
         window.makeKeyAndOrderFront(nil)
     }
 
@@ -62,6 +62,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @IBOutlet var createTextFileMenu: NSMenuItem!
     @IBOutlet var createTableMenu: NSMenuItem!
+    @IBOutlet var createListMenu: NSMenuItem!
 
     @IBAction func createTextFile(_ sender: Any) {
         BrainCacheContext.shared.menuAPI.subject.send(.createTextFile)
@@ -76,5 +77,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let columns = Int(menuItem.title.filter { "0" ... "9" ~= $0 }) ?? 2
             BrainCacheContext.shared.menuAPI.subject.send(.createTable(columns: columns))
         }
+    }
+    
+    @IBAction func createList(_ sender: Any) {
+        if let menuItem = sender as? NSMenuItem {
+            let columns = Int(menuItem.title.filter { "0" ... "9" ~= $0 }) ?? 2
+            BrainCacheContext.shared.menuAPI.subject.send(.createList(columns: columns))
+        }
+    }
+}
+
+class AppHostingView<Content>: NSHostingView<Content>, ObservableObject where Content: View {
+    override func scrollWheel(with event: NSEvent) {
+        NotificationCenter.default.post(name: .didWheelScroll, object: event)
     }
 }

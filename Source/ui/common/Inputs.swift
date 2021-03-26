@@ -10,13 +10,16 @@ import SwiftUI
 
 class EditorController: NSViewController {
     var textView = CustomNSTextView()
+    var scroller: NSScrollView?
 
     override func loadView() {
         let scrollView = NSScrollView()
+        scroller = scrollView
         scrollView.hasVerticalScroller = true
         scrollView.backgroundColor = .clear
         scrollView.contentView.backgroundColor = .clear
         scrollView.drawsBackground = false
+        scrollView.autohidesScrollers = true
 
         textView.autoresizingMask = [.width]
         textView.backgroundColor = .clear
@@ -41,13 +44,23 @@ class CustomNSTextView: NSTextView {
     override func paste(_ sender: Any?) {
         pasteAsPlainText(sender)
     }
+
+    var contentSize: CGSize {
+        guard let layoutManager = layoutManager, let textContainer = textContainer else {
+            print("textView no layoutManager or textContainer")
+            return .zero
+        }
+
+        layoutManager.ensureLayout(for: textContainer)
+        return layoutManager.usedRect(for: textContainer).size
+    }
 }
 
 struct NSTextEditor: NSViewControllerRepresentable {
     @Binding var text: String
     var font: NSFont
     let textColor: NSColor
-    let lineHeight: CGFloat?
+    var lineHeight: CGFloat? = nil
     let highlightedText: String
 
     func makeCoordinator() -> Coordinator {
@@ -138,13 +151,15 @@ struct EditableText: View {
     let uid: UID
     let alignment: Alignment
     let useMonoFont: Bool
+    let countClickActivation: Int
     let action: (String) -> Void
 
-    init(_ text: String, uid: UID, alignment: Alignment = .leading, useMonoFont: Bool = false, action: @escaping (String) -> Void) {
+    init(_ text: String, uid: UID, alignment: Alignment = .leading, useMonoFont: Bool = false, countClickActivation:Int = 2, action: @escaping (String) -> Void) {
         self.text = text
         self.uid = uid
         self.alignment = alignment
         self.useMonoFont = useMonoFont
+        self.countClickActivation = countClickActivation
         self.action = action
     }
 
@@ -157,6 +172,7 @@ struct EditableText: View {
                     action(notifier.editingText)
                     notifier.isEditing = false
                 })
+                .focusable()
                     .textFieldStyle(PlainTextFieldStyle())
                     .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
                     .padding(.horizontal, SizeConstants.padding)
@@ -169,7 +185,7 @@ struct EditableText: View {
                     .padding(.horizontal, SizeConstants.padding)
                     .frame(width: proxy.size.width, height: proxy.size.height, alignment: alignment)
                     .contentShape(Rectangle())
-                    .onTapGesture(count: 2) {
+                    .onTapGesture(count: countClickActivation) {
                         notifier.editingText = text
                         notifier.ownerUID = uid
                         notifier.isEditing = true
@@ -244,4 +260,106 @@ struct EditableMultilineText: View {
                 }
         }
     }
+}
+
+struct TextArea: NSViewRepresentable {
+    @Binding var text: String
+    @Binding var height: CGFloat
+    let textColor: NSColor
+    let font: NSFont
+    var highlightedText: String = ""
+    var lineHeight: CGFloat? = nil
+    var width: CGFloat
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    func makeNSView(context: Context) -> CustomNSTextView {
+        let tv = CustomNSTextView()
+        tv.delegate = context.coordinator
+        tv.textColor = textColor
+        tv.font = font
+        tv.allowsUndo = true
+        tv.defaultParagraphStyle = getStyle()
+        tv.backgroundColor = Colors.clear
+        tv.isVerticallyResizable = false
+        tv.canDrawSubviewsIntoLayer = true
+        tv.string = "Ag"
+        return tv
+    }
+
+    func getStyle() -> NSMutableParagraphStyle {
+        let style = NSMutableParagraphStyle()
+        style.alignment = .left
+        style.firstLineHeadIndent = 0
+        style.lineBreakMode = .byWordWrapping
+
+        if let lineHeight = lineHeight {
+            style.minimumLineHeight = lineHeight
+            style.maximumLineHeight = lineHeight
+            style.lineHeightMultiple = lineHeight
+        }
+
+        return style
+    }
+
+    func updateNSView(_ textArea: CustomNSTextView, context: Context) {
+        if textArea.string != text || textArea.curHighlightedText != highlightedText || textArea.font != self.font {
+            textArea.curHighlightedText = highlightedText
+            textArea.string = text
+
+            let attributedStr = NSMutableAttributedString(string: text)
+
+            attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: text.count))
+
+            let style = getStyle()
+
+            attributedStr.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: NSRange(location: 0, length: text.count))
+
+            textArea.defaultParagraphStyle = style
+
+            if !highlightedText.isEmpty {
+                let ranges = text.ranges(of: highlightedText, options: .caseInsensitive)
+                for r in ranges {
+                    attributedStr.addAttribute(NSAttributedString.Key.backgroundColor, value: Colors.textHighlightBG, range: NSRange(r, in: highlightedText))
+                }
+            }
+
+            textArea.textStorage?.setAttributedString(attributedStr)
+            textArea.font = font
+            textArea.textColor = textColor
+        }
+
+        textArea.textContainer?.containerSize.width = width
+        if height != textArea.contentSize.height {
+            height = textArea.contentSize.height
+        }
+    }
+
+    class Coordinator: NSObject, NSTextViewDelegate {
+        var parent: TextArea
+
+        init(_ textArea: TextArea) {
+            parent = textArea
+        }
+
+        func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
+            return true
+        }
+
+        func textDidChange(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView else { return }
+            parent.text = textView.string
+        }
+
+        func textView(_ textView: NSTextView, willChangeSelectionFromCharacterRange oldSelectedCharRange: NSRange, toCharacterRange newSelectedCharRange: NSRange) -> NSRange {
+            return newSelectedCharRange
+        }
+    }
+}
+
+
+class HeightDidChangeNotifier: ObservableObject {
+    @Published var height: CGFloat = 0
 }

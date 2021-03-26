@@ -12,6 +12,7 @@ class Folder: DomainEntity, ObservableObject {
     @Published var title: String
     @Published var selectedFileUID: UID?
     @Published var search: String = ""
+    let searchUID: UID = UID()
 
     init(uid: UID, title: String, dispatcher: DomainEventDispatcher, selectedFileUID: UID? = nil) {
         self.title = title
@@ -56,5 +57,14 @@ class Folder: DomainEntity, ObservableObject {
         }
 
         return File(uid: UID(), folderUID: uid, title: "New Table", body: TableFileBody(headers: headers, rows: [row1, row2]), useMonoFont: false, dispatcher: dispatcher)
+    }
+
+    func createListFile(columnCount: Int) -> File {
+        var columns: [ListColumn] = []
+        for i in 0 ... columnCount - 1 {
+            columns.append(ListColumn(text: "Column \(i + 1)", ratio: 1.0 / CGFloat(columnCount)))
+        }
+
+        return File(uid: UID(), folderUID: uid, title: "New List", body: ListFileBody(columns: columns), useMonoFont: false, dispatcher: dispatcher)
     }
 }

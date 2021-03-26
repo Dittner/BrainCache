@@ -16,7 +16,7 @@ struct HSeparatorView: View {
     }
 
     var body: some View {
-        Color.white.opacity(0.1)
+        Colors.separator.color
             .padding(.horizontal, horizontalPadding)
             .frame(height: 1)
             .frame(maxWidth: .infinity)

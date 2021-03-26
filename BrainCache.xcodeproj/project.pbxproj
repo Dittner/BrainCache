@@ -54,11 +54,16 @@
 		5B3E17652606A79900D2CECC /* HSeparatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3E17642606A79800D2CECC /* HSeparatorView.swift */; };
 		5B3E17682606A79C00D2CECC /* VSeparatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3E17672606A79C00D2CECC /* VSeparatorView.swift */; };
 		5B5AF62326096A6C00387272 /* MenuAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5AF62226096A6C00387272 /* MenuAPI.swift */; };
-		5BA4DCDD260B74CF005ED5F1 /* Table.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA4DCDC260B74CF005ED5F1 /* Table.swift */; };
+		5B928C4E260CEE560039FC14 /* ListFileBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B928C4D260CEE560039FC14 /* ListFileBody.swift */; };
+		5B928C54260CEF230039FC14 /* TextFileBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B928C53260CEF230039FC14 /* TextFileBody.swift */; };
+		5B928C5D260CFB340039FC14 /* List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B928C58260CF97F0039FC14 /* List.swift */; };
+		5B928C60260D02190039FC14 /* ListFileBodySerializer_v1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B928C5F260D02190039FC14 /* ListFileBodySerializer_v1.swift */; };
+		5BA4DCDD260B74CF005ED5F1 /* TableFileBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA4DCDC260B74CF005ED5F1 /* TableFileBody.swift */; };
 		5BA4DCE1260B7B7A005ED5F1 /* Collection++.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA4DCE0260B7B7A005ED5F1 /* Collection++.swift */; };
 		5BC1257F2609FB6700918AB3 /* DomainEntityRemover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC1257B2609FA7100918AB3 /* DomainEntityRemover.swift */; };
 		5BC1258E260A35FF00918AB3 /* NumericStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC1258D260A35FF00918AB3 /* NumericStepper.swift */; };
 		5BC12593260A508600918AB3 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC12592260A508600918AB3 /* File.swift */; };
+		5BE6D032260DF6FE000D0AA9 /* VScrollBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE6D031260DF6FE000D0AA9 /* VScrollBar.swift */; };
 		5BF9ADD5260BE514004C6AFC /* Grid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC12585260A275900918AB3 /* Grid.swift */; };
 		5BF9ADD8260BEB0E004C6AFC /* TableFileBodySerializer_v1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF9ADD7260BEB0E004C6AFC /* TableFileBodySerializer_v1.swift */; };
 		5BF9ADDD260BECEB004C6AFC /* TextFileBodySerializer_v1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF9ADDC260BECEB004C6AFC /* TextFileBodySerializer_v1.swift */; };
@@ -115,12 +120,17 @@
 		5B3E17642606A79800D2CECC /* HSeparatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HSeparatorView.swift; sourceTree = "<group>"; };
 		5B3E17672606A79C00D2CECC /* VSeparatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VSeparatorView.swift; sourceTree = "<group>"; };
 		5B5AF62226096A6C00387272 /* MenuAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuAPI.swift; sourceTree = "<group>"; };
-		5BA4DCDC260B74CF005ED5F1 /* Table.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Table.swift; sourceTree = "<group>"; };
+		5B928C4D260CEE560039FC14 /* ListFileBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFileBody.swift; sourceTree = "<group>"; };
+		5B928C53260CEF230039FC14 /* TextFileBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileBody.swift; sourceTree = "<group>"; };
+		5B928C58260CF97F0039FC14 /* List.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List.swift; sourceTree = "<group>"; };
+		5B928C5F260D02190039FC14 /* ListFileBodySerializer_v1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFileBodySerializer_v1.swift; sourceTree = "<group>"; };
+		5BA4DCDC260B74CF005ED5F1 /* TableFileBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableFileBody.swift; sourceTree = "<group>"; };
 		5BA4DCE0260B7B7A005ED5F1 /* Collection++.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection++.swift"; sourceTree = "<group>"; };
 		5BC1257B2609FA7100918AB3 /* DomainEntityRemover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainEntityRemover.swift; sourceTree = "<group>"; };
 		5BC12585260A275900918AB3 /* Grid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grid.swift; sourceTree = "<group>"; };
 		5BC1258D260A35FF00918AB3 /* NumericStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericStepper.swift; sourceTree = "<group>"; };
 		5BC12592260A508600918AB3 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		5BE6D031260DF6FE000D0AA9 /* VScrollBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VScrollBar.swift; sourceTree = "<group>"; };
 		5BF9ADD7260BEB0E004C6AFC /* TableFileBodySerializer_v1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableFileBodySerializer_v1.swift; sourceTree = "<group>"; };
 		5BF9ADDC260BECEB004C6AFC /* TextFileBodySerializer_v1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileBodySerializer_v1.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -256,6 +266,7 @@
 			isa = PBXGroup;
 			children = (
 				5B288A982607595900CF175F /* Inputs.swift */,
+				5BE6D031260DF6FE000D0AA9 /* VScrollBar.swift */,
 				5BC1258D260A35FF00918AB3 /* NumericStepper.swift */,
 				5B3E175026065A2600D2CECC /* Buttons.swift */,
 				5B3E17642606A79800D2CECC /* HSeparatorView.swift */,
@@ -284,7 +295,9 @@
 			isa = PBXGroup;
 			children = (
 				5BC12592260A508600918AB3 /* File.swift */,
-				5BA4DCDC260B74CF005ED5F1 /* Table.swift */,
+				5B928C53260CEF230039FC14 /* TextFileBody.swift */,
+				5B928C4D260CEE560039FC14 /* ListFileBody.swift */,
+				5BA4DCDC260B74CF005ED5F1 /* TableFileBody.swift */,
 				5B3E16E62606089700D2CECC /* Folder.swift */,
 				5B3E172026063DC800D2CECC /* DomainEntity.swift */,
 			);
@@ -314,6 +327,7 @@
 				5B3E1729260644AB00D2CECC /* FileSerializer_v1.swift */,
 				5BF9ADD7260BEB0E004C6AFC /* TableFileBodySerializer_v1.swift */,
 				5BF9ADDC260BECEB004C6AFC /* TextFileBodySerializer_v1.swift */,
+				5B928C5F260D02190039FC14 /* ListFileBodySerializer_v1.swift */,
 				5B3E170D2606198E00D2CECC /* FolderSerializer_v1.swift */,
 			);
 			path = v1;
@@ -347,6 +361,7 @@
 		5BF9ADD2260BE3FA004C6AFC /* controls */ = {
 			isa = PBXGroup;
 			children = (
+				5B928C58260CF97F0039FC14 /* List.swift */,
 				5BC12585260A275900918AB3 /* Grid.swift */,
 			);
 			path = controls;
@@ -438,7 +453,7 @@
 				5B3E16FC2606157D00D2CECC /* Constants.swift in Sources */,
 				5B3E16EC260609E500D2CECC /* UID.swift in Sources */,
 				5B3E1713260619AF00D2CECC /* DetailedError.swift in Sources */,
-				5BA4DCDD260B74CF005ED5F1 /* Table.swift in Sources */,
+				5BA4DCDD260B74CF005ED5F1 /* TableFileBody.swift in Sources */,
 				5B288A8D2607409400CF175F /* FileListView.swift in Sources */,
 				5B3E174C26064D8800D2CECC /* TextFormatter.swift in Sources */,
 				5B3E175126065A2600D2CECC /* Buttons.swift in Sources */,
@@ -452,7 +467,9 @@
 				5B3E174A26064D8500D2CECC /* NSWindow++.swift in Sources */,
 				5B3E16E72606089700D2CECC /* Folder.swift in Sources */,
 				5B3E16EA260609E200D2CECC /* Logger.swift in Sources */,
+				5B928C5D260CFB340039FC14 /* List.swift in Sources */,
 				5B3E17682606A79C00D2CECC /* VSeparatorView.swift in Sources */,
+				5B928C4E260CEE560039FC14 /* ListFileBody.swift in Sources */,
 				5B3E174826064D8100D2CECC /* View++.swift in Sources */,
 				5B3E1727260643BE00D2CECC /* FolderSerializer_v1.swift in Sources */,
 				5B3E1704260617CD00D2CECC /* DomainEventDispatcher.swift in Sources */,
@@ -461,6 +478,7 @@
 				5BF9ADD8260BEB0E004C6AFC /* TableFileBodySerializer_v1.swift in Sources */,
 				5B3E173226064A5C00D2CECC /* FolderListView.swift in Sources */,
 				5B3E16F4260609EE00D2CECC /* Color++.swift in Sources */,
+				5B928C54260CEF230039FC14 /* TextFileBody.swift in Sources */,
 				5B3E171A26061E5D00D2CECC /* BrainCacheContext.swift in Sources */,
 				5B3E16F2260609EC00D2CECC /* String++.swift in Sources */,
 				5B3E16F826060BA700D2CECC /* Icon.swift in Sources */,
@@ -470,9 +488,11 @@
 				5B288A992607595900CF175F /* Inputs.swift in Sources */,
 				5B288A8526073C4100CF175F /* NSTextField++.swift in Sources */,
 				5B5AF62326096A6C00387272 /* MenuAPI.swift in Sources */,
+				5BE6D032260DF6FE000D0AA9 /* VScrollBar.swift in Sources */,
 				5BF9ADD5260BE514004C6AFC /* Grid.swift in Sources */,
 				5B3E17652606A79900D2CECC /* HSeparatorView.swift in Sources */,
 				5B3E16F0260609EA00D2CECC /* Array++.swift in Sources */,
+				5B928C60260D02190039FC14 /* ListFileBodySerializer_v1.swift in Sources */,
 				5B3E172A260644AB00D2CECC /* FileSerializer_v1.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
