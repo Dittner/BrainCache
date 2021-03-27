@@ -131,7 +131,6 @@ struct VScrollBar<Content>: View where Content: View {
     let scrollerThumbColor = Color(rgb: 0x737475)
 
     init(uid: UID, @ViewBuilder content: () -> Content) {
-        print("CustomScrollView init \(uid)")
         controller = VScrollBarController(contentUID: uid)
         self.content = content()
     }

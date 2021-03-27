@@ -21,6 +21,8 @@ struct FolderListView: View {
                             }
                         }
 
+                        HSeparatorView()
+
                         TextButton(text: "New Folder", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
                             self.vm.createFolder()
                         }
@@ -42,6 +44,7 @@ enum FolderAction {
 
 struct FolderListCell: View {
     @ObservedObject private var folder: Folder
+    let vm = FolderListVM.shared
     let didSelectAction: () -> Void
     private let isSelected: Bool
 
@@ -56,16 +59,50 @@ struct FolderListCell: View {
         HStack(alignment: .center, spacing: 0) {
             Icon(name: .folder, size: SizeConstants.iconSize)
                 .allowsHitTesting(false)
-                .padding(.leading, SizeConstants.padding)
 
-            EditableText(folder.title, uid: folder.uid) { value in
+            EditableText(folder.title, uid: folder.uid, countClickActivation: 2) { value in
                 folder.title = value
             }
-            .frame(height: SizeConstants.listCellHeight)
+            .frame(width: SizeConstants.folderListWidth - 50, height: SizeConstants.listCellHeight)
+
+            if isSelected {
+                MenuButton(
+                    label: Icon(name: .dropdown, size: SizeConstants.fontSize),
+                    content: {
+                        Button("New Text File") { vm.createTextFile() }
+
+                        MenuButton("New List ...") {
+                            Button("1 column") { vm.createListFile(with: 1) }
+                            ForEach(2 ... 10, id: \.self) { columnsNum in
+                                Button("\(columnsNum) columns") { vm.createListFile(with: columnsNum) }
+                            }
+                        }.menuButtonStyle(BorderlessButtonMenuButtonStyle())
+                        
+                        Colors.clear.color
+                            .frame(height: 0.1)
+                            .frame(maxWidth: .infinity)
+                        
+                        MenuButton("New Table ...") {
+                            Button("1 column") { vm.createTableFile(with: 1) }
+                            ForEach(2 ... 10, id: \.self) { columnsNum in
+                                Button("\(columnsNum) columns") { vm.createTableFile(with: columnsNum) }
+                            }
+                        }.menuButtonStyle(BorderlessButtonMenuButtonStyle())
+                        
+
+                        Button("Delete Folder") { vm.deleteFolder() }
+
+                    })
+                    .menuButtonStyle(BorderlessButtonMenuButtonStyle())
+                    .foregroundColor(Colors.button.color)
+            } else {
+                Spacer()
+            }
         }
+        .padding(.horizontal, SizeConstants.padding)
         .foregroundColor(isSelected ? Colors.textLight.color : Colors.textDark.color)
         .frame(width: SizeConstants.folderListWidth, height: SizeConstants.listCellHeight)
-        .background(isSelected ? Colors.black02.color : Colors.clear.color)
+
         .if(!isSelected) {
             $0.highPriorityGesture(
                 TapGesture()

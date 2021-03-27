@@ -9,7 +9,7 @@ import Combine
 import SwiftUI
 
 protocol FileBody {
-    var stateDidChange: CurrentValueSubject<Bool, Never> { get }
+    var stateDidChange: PassthroughSubject<DomainEntityStateDidChangeEvent, Never> { get }
 }
 
 class File: DomainEntity, ObservableObject {
@@ -28,7 +28,6 @@ class File: DomainEntity, ObservableObject {
         super.init(uid: uid, dispatcher: dispatcher)
 
         body.stateDidChange
-            .dropFirst()
             .sink { _ in
                 self.dispatcher.notify(.entityStateChanged(entity: self))
             }

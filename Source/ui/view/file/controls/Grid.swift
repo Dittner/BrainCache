@@ -6,27 +6,16 @@
 //  Copyright © 2020 Alexander Dittner. All rights reserved.
 //
 
+import Combine
 import SwiftUI
 
-class GridController: ObservableObject {
-    @Published var lines: [GridLine] = []
-    @Published var table: TableFileBody
-
+class TableLineDragProcessor: ObservableObject {
     @Published var curDragOffset: CGFloat = 0
     @Published var curDragLine: GridLine? = nil
     private let minRation: CGFloat = 0.05
-
-    init(table: TableFileBody) {
+    let table: TableFileBody
+    init(_ table:TableFileBody) {
         self.table = table
-
-        var total: CGFloat = 0
-        for (index, h) in table.headers.enumerated() {
-            if index < table.headers.count - 1 {
-                total += h.ratio
-                let line = GridLine(position: total, leftColumn: table.headers[index], rightColumn: table.headers[index + 1])
-                lines.append(line)
-            }
-        }
     }
 
     func dragDidEnd(with relativeOffset: CGFloat) {
@@ -53,6 +42,42 @@ class GridController: ObservableObject {
         }
         return false
     }
+}
+
+class GridController: ObservableObject {
+    @Published var lines: [GridLine] = []
+    @Published var stateDidChange: Bool = false
+    let table: TableFileBody
+    let dragProcessor: TableLineDragProcessor
+
+    private var disposeBag: Set<AnyCancellable> = []
+    init(table: TableFileBody) {
+        self.table = table
+        dragProcessor = TableLineDragProcessor(table)
+        updateGridlines()
+        table.stateDidChange
+            .sink { _ in
+                self.updateGridlines()
+                self.updateGridView()
+            }
+            .store(in: &disposeBag)
+    }
+
+    private func updateGridlines() {
+        lines = []
+        var total: CGFloat = 0
+        for (index, h) in table.headers.enumerated() {
+            if index < table.headers.count - 1 {
+                total += h.ratio
+                let line = GridLine(position: total, leftColumn: table.headers[index], rightColumn: table.headers[index + 1])
+                lines.append(line)
+            }
+        }
+    }
+    
+    private func updateGridView() {
+        stateDidChange = true
+    }
 
     func updateHeader(_ header: TableHeader, title: String) {
         table.updateHeaderTitle(header, title: title)
@@ -68,17 +93,13 @@ class GridController: ObservableObject {
         } else {
             table.updateSorting(headerIndex: headerIndex, type: .ascending)
         }
-
-        updateGridView()
     }
 
     func addTableRow() {
         table.addNewRow()
     }
 
-    func updateGridView() {
-        curDragLine = nil
-    }
+    
 }
 
 struct GridHeaderView: View {
@@ -97,17 +118,27 @@ struct GridHeaderView: View {
                     ZStack(alignment: .leading) {
                         EditableText(header.title, uid: header.uid, alignment: .center, useMonoFont: useMonoFont) { value in
                             self.gc.updateHeader(header, title: value)
-                            self.gc.updateGridView()
                         }
 
-                        IconButton(name: .sort, size: SizeConstants.fontSize, color: gc.table.sortByHeaderIndex == index ? Colors.textLight.color : Colors.textDark.color ) {
-                            self.gc.updateSort(headerIndex: index)
+                        if gc.table.sortByHeaderIndex == index {
+                            IconButton(name: .sort, size: SizeConstants.fontSize, color: gc.table.sortByHeaderIndex == index ? Colors.textLight.color : Colors.textDark.color) {
+                                self.gc.updateSort(headerIndex: index)
+                            }
+                            .rotationEffect(.degrees(gc.table.sortType == .ascending ? 180 : 0))
+                            .offset(x: header.ratio * geometry.size.width - 25)
+                            .zIndex(2)
                         }
-                        .rotationEffect(.degrees(gc.table.sortType == .ascending ? 180 : 0))
-                        .offset(x: header.ratio * geometry.size.width - 25)
                     }
-                    .foregroundColor(gc.table.sortByHeaderIndex == index ? Colors.textLight.color : Colors.textDark.color )
+                    .foregroundColor(gc.table.sortByHeaderIndex == index ? Colors.textLight.color : Colors.textDark.color)
                     .frame(width: header.ratio * geometry.size.width, height: SizeConstants.listCellHeight)
+                    .if(gc.table.sortByHeaderIndex != index) {
+                        $0.highPriorityGesture(
+                            TapGesture()
+                                .onEnded { _ in
+                                    self.gc.updateSort(headerIndex: index)
+                                }
+                        )
+                    }
                 }
             }.frame(height: SizeConstants.listCellHeight)
         }
@@ -116,28 +147,30 @@ struct GridHeaderView: View {
 
 struct GridLinesView: View {
     @ObservedObject private var gc: GridController
+    @ObservedObject private var dragProcessor: TableLineDragProcessor
 
     init(_ gc: GridController) {
         self.gc = gc
+        self.dragProcessor = gc.dragProcessor
     }
 
     var body: some View {
         GeometryReader { geometry in
             ForEach(gc.lines, id: \.id) { line in
                 GridLineView()
-                    .offset(x: line.uid == self.gc.curDragLine?.uid ? line.position * geometry.size.width + self.gc.curDragOffset : line.position * geometry.size.width)
+                    .offset(x: line.uid == self.dragProcessor.curDragLine?.uid ? line.position * geometry.size.width + self.dragProcessor.curDragOffset : line.position * geometry.size.width)
                     .gesture(DragGesture()
                         .onChanged { gesture in
-                            if line.uid != self.gc.curDragLine?.uid {
-                                self.gc.curDragLine = line
+                            if line.uid != self.dragProcessor.curDragLine?.uid {
+                                self.dragProcessor.curDragLine = line
                             }
 
-                            if self.gc.isDragEnabled(with: gesture.translation.width / geometry.size.width) {
-                                self.gc.curDragOffset = gesture.translation.width
+                            if self.dragProcessor.isDragEnabled(with: gesture.translation.width / geometry.size.width) {
+                                self.dragProcessor.curDragOffset = gesture.translation.width
                             }
                         }
                         .onEnded { _ in
-                            self.gc.dragDidEnd(with: self.gc.curDragOffset / geometry.size.width)
+                            self.dragProcessor.dragDidEnd(with: self.dragProcessor.curDragOffset / geometry.size.width)
                         }
                     )
             }

@@ -41,9 +41,7 @@ class FolderListVM: ObservableObject {
             .sink { event in
                 switch event {
                 case .deleteFolder:
-                    if let folder = self.selectedFolder {
-                        self.context.entityRemover.removeFolderWithFiles(folder)
-                    }
+                    self.deleteFolder()
                 case .createFolder:
                     self.createFolder()
                 case .createTextFile:
@@ -73,8 +71,14 @@ class FolderListVM: ObservableObject {
         context.foldersRepo.write(newFolder)
         selectFolder(newFolder)
     }
+    
+    func deleteFolder() {
+        if let folder = self.selectedFolder {
+            self.context.entityRemover.removeFolderWithFiles(folder)
+        }
+    }
 
-    private func createTextFile() {
+    func createTextFile() {
         if let folder = selectedFolder {
             let newFile = folder.createTextFile()
             context.filesRepo.write(newFile)
@@ -82,7 +86,7 @@ class FolderListVM: ObservableObject {
         }
     }
 
-    private func createTableFile(with columnCount: Int) {
+    func createTableFile(with columnCount: Int) {
         if let folder = selectedFolder {
             let newFile = folder.createTableFile(columnCount: columnCount)
             context.filesRepo.write(newFile)
@@ -90,7 +94,7 @@ class FolderListVM: ObservableObject {
         }
     }
     
-    private func createListFile(with columnCount: Int) {
+    func createListFile(with columnCount: Int) {
         if let folder = selectedFolder {
             let newFile = folder.createListFile(columnCount: columnCount)
             context.filesRepo.write(newFile)

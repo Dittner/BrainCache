@@ -5,6 +5,7 @@
 //  Created by Alexander Dittner on 20.03.2021.
 //
 
+import Combine
 import SwiftUI
 
 struct FileListView: View {
@@ -12,13 +13,10 @@ struct FileListView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center, spacing: 1) {
+            HStack(alignment: .center, spacing: -1) {
                 if vm.files.count > 0 {
                     ForEach(vm.files, id: \.id) { f in
-                        FileListCell(file: f, isSelected: f.uid == vm.selectedFile?.uid) {
-                            vm.selectFile(f)
-                        }
-
+                        FileListCell(file: f, isSelected: f.uid == vm.selectedFile?.uid)
                         VSeparatorView(verticalPadding: 5)
                     }
                 }
@@ -30,7 +28,7 @@ struct FileListView: View {
                 }
 
             }.frame(height: SizeConstants.appHeaderHeight)
-                .background(Colors.black02.color)
+                .background(Colors.black01.color)
                 .zIndex(1)
 
             HSeparatorView()
@@ -51,13 +49,12 @@ struct FileListView: View {
 
 struct FileListCell: View {
     @ObservedObject private var file: File
-    let didSelectAction: () -> Void
+    private let vm = FileListVM.shared
     private let isSelected: Bool
 
-    init(file: File, isSelected: Bool, didSelectAction: @escaping () -> Void) {
+    init(file: File, isSelected: Bool) {
         self.file = file
         self.isSelected = isSelected
-        self.didSelectAction = didSelectAction
     }
 
     private func getFileIcon() -> FontIcon {
@@ -76,18 +73,90 @@ struct FileListCell: View {
                 file.title = value
             }
             .frame(height: SizeConstants.listCellHeight)
-            .frame(maxWidth: SizeConstants.fileListWidth)
+            .frame(width: SizeConstants.fileListWidth - 45)
+
+            if isSelected {
+                FileMenuButton(file: file)
+            } else {
+                Spacer()
+            }
         }
+        .background(isSelected ? Colors.selection.color : Colors.clear.color)
         .foregroundColor(isSelected ? Colors.textLight.color : Colors.textDark.color)
-        .frame(height: SizeConstants.listCellHeight)
+        .frame(width: SizeConstants.fileListWidth, height: SizeConstants.listCellHeight)
+
         .if(!isSelected) {
             $0.highPriorityGesture(
                 TapGesture()
                     .onEnded { _ in
-                        didSelectAction()
+                        vm.selectFile(file)
                     }
             )
         }
+    }
+}
+
+struct FileMenuButton: View {
+    @ObservedObject private var file: File
+    @ObservedObject private var notifier = Notifier()
+    private let vm = FileListVM.shared
+
+    class Notifier: ObservableObject {
+        @Published var stateChanged: Bool = false
+    }
+
+    private var disposeBag: Set<AnyCancellable> = []
+    init(file: File) {
+        self.file = file
+
+        file.body.stateDidChange
+            .map { _ in true }
+            .assign(to: \.stateChanged, on: notifier)
+            .store(in: &disposeBag)
+    }
+
+    var body: some View {
+        MenuButton(
+            label: Icon(name: .dropdown, size: SizeConstants.fontSize),
+            content: {
+                if let tableBody = file.body as? TableFileBody {
+                    Button("Add Row") { tableBody.addNewRow() }
+                    Button("Add Column") { tableBody.addNewColumn() }
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.useMonoFont.toggle() }
+                    MenuButton("Delete ...") {
+                        if tableBody.headers.count > 1 {
+                            ForEach(tableBody.headers.enumeratedArray(), id: \.offset) { index, header in
+                                Button("C\(index + 1): «\(header.title)»") {
+                                    tableBody.deleteColumn(at: index)
+                                }
+                            }
+                        }
+
+                        Button("Delete Table") { vm.deleteFile() }
+                    }
+
+                } else if let listBody = file.body as? ListFileBody {
+                    Button("Add Column") { listBody.addNewColumn() }
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.useMonoFont.toggle() }
+                    MenuButton("Delete ...") {
+                        if listBody.columns.count > 1 {
+                            ForEach(listBody.columns.enumeratedArray(), id: \.offset) { index, column in
+                                Button("С\(index + 1): «\(column.title)»") {
+                                    listBody.deleteColumn(at: index)
+                                }
+                            }
+                        }
+
+                        Button("Delete List") { vm.deleteFile() }
+                    }
+
+                } else {
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.useMonoFont.toggle() }
+                    Button("Delete File") { vm.deleteFile() }
+                }
+            })
+            .menuButtonStyle(BorderlessButtonMenuButtonStyle())
+            .foregroundColor(Colors.button.color)
     }
 }
 
@@ -119,7 +188,7 @@ struct SearchInputView: View {
         }
         .frame(width: SizeConstants.searchBarWidth, height: SizeConstants.appHeaderHeight)
         .foregroundColor(folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color)
-        .background(Colors.black02.color)
+        .background(Colors.black01.color)
     }
 }
 
@@ -190,7 +259,7 @@ struct TableFileView: View {
 
     var body: some View {
         GeometryReader { root in
-            Colors.black02.color
+            Colors.black01.color
                 .frame(width: SizeConstants.tableRowNumberWidth)
 
             GridHeaderView(gc, useMonoFont: file.useMonoFont)
@@ -212,20 +281,16 @@ struct TableFileView: View {
                             ForEach(row.cells.enumeratedArray(), id: \.offset) { index, cell in
                                 EditableMultilineText(cell.text, uid: cell.uid, alignment: .leading, useMonoFont: file.useMonoFont) { value in
                                     self.gc.updateCell(cell, text: value)
-                                    self.gc.updateGridView()
                                 }
                                 .foregroundColor(Colors.text.color)
                                 .frame(width: fileBody.headers[index].ratio * (root.size.width - SizeConstants.tableRowNumberWidth - scrollerWidth))
                             }
-                            
-                            //Spacer()
                         }
                         HSeparatorView()
                     }
 
                     TextButton(text: "Add Row", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
                         self.gc.addTableRow()
-                        self.gc.updateGridView()
                     }
 
                     Spacer()
@@ -257,6 +322,7 @@ struct ListFileView: View {
     private let fileBody: ListFileBody
     @ObservedObject private var folder: Folder
     private let scrollerWidth: CGFloat = 15
+    private let headerHeight: CGFloat = SizeConstants.listCellHeight
 
     init(file: File, fileBody: ListFileBody, folder: Folder) {
         print("ListFileBodyView init, use mono font = \(file.useMonoFont)")
@@ -268,15 +334,22 @@ struct ListFileView: View {
 
     var body: some View {
         GeometryReader { proxy in
+            ListHeaderView(lc: lc, useMonoFont: file.useMonoFont)
+                .frame(width: proxy.size.width - scrollerWidth, height: headerHeight)
+
             VScrollBar(uid: file.uid) {
                 HStack(alignment: .top, spacing: 0) {
                     ForEach(fileBody.columns, id: \.uid) { column in
-                        ListColumnCell(column: column, useMonoFont: file.useMonoFont, searchText: folder.search, width: column.ratio * (proxy.size.width - scrollerWidth), minHeight: proxy.size.height)
+                        ListColumnCell(column: column, useMonoFont: file.useMonoFont, searchText: folder.search, width: column.ratio * (proxy.size.width - scrollerWidth), minHeight: proxy.size.height - SizeConstants.listCellHeight - headerHeight)
                             .frame(width: column.ratio * (proxy.size.width - scrollerWidth))
                     }
                 }
             }
-            .frame(width: proxy.size.width, height: proxy.size.height)
+            .padding(.top, headerHeight)
+            .frame(width: proxy.size.width, height: proxy.size.height - headerHeight)
+
+            HSeparatorView()
+                .offset(y: headerHeight)
 
             VSeparatorView()
                 .offset(x: proxy.size.width - scrollerWidth)

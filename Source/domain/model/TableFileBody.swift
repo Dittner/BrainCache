@@ -8,8 +8,8 @@
 import Combine
 import SwiftUI
 
-class TableFileBody: FileBody {
-    var stateDidChange = CurrentValueSubject<Bool, Never>(false)
+class TableFileBody: FileBody, ObservableObject {
+    var stateDidChange = PassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
 
     private(set) var headers: [TableHeader]
     private(set) var rows: [TableRow]
@@ -21,32 +21,32 @@ class TableFileBody: FileBody {
         self.rows = rows
         self.sortType = sortType
         self.sortByHeaderIndex = sortByHeaderIndex
-        
+
         sortRows()
     }
 
     func updateCell(_ cell: TableCell, with text: String) {
         cell.text = text
-        stateDidChange.send(true)
+        stateDidChange.send(.tableText)
     }
 
     func updateHeaderTitle(_ header: TableHeader, title: String) {
         header.title = title
-        stateDidChange.send(true)
+        stateDidChange.send(.tableTitle)
     }
 
     func updateHeaderRation(_ header: TableHeader, ration: CGFloat) {
         header.ratio = ration
-        stateDidChange.send(true)
+        stateDidChange.send(.tableRatio)
     }
 
     func updateSorting(headerIndex: Int, type: SortType) {
         sortByHeaderIndex = headerIndex
         sortType = type
         sortRows()
-        stateDidChange.send(true)
+        stateDidChange.send(.tableSorting)
     }
-    
+
     private func sortRows() {
         if sortType == .ascending {
             rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text < $1.cells[sortByHeaderIndex].text })
@@ -54,13 +54,37 @@ class TableFileBody: FileBody {
             rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text > $1.cells[sortByHeaderIndex].text })
         }
     }
-    
+
     func addNewRow() {
         let row = TableRow(cells: [])
         for _ in 0 ... headers.count - 1 {
             row.cells.append(TableCell(text: ""))
         }
         rows.append(row)
+        stateDidChange.send(.tableRows)
+    }
+    
+    func addNewColumn() {
+        let ratioFactor = CGFloat(headers.count) / CGFloat(headers.count + 1)
+        headers.forEach { $0.ratio *= ratioFactor }
+        headers.append(TableHeader(title: "Header \(headers.count + 1)", ratio: 1 - ratioFactor))
+        rows.forEach { $0.cells.append(TableCell(text: "")) }
+        stateDidChange.send(.tableColumns)
+    }
+
+    func deleteColumn(at index: Int) {
+        guard headers.count > 1 else { return }
+        guard index < headers.count else { return }
+        
+        if sortByHeaderIndex == index {
+            sortByHeaderIndex -= 1
+        }
+        
+        let deletingColumnRatio = headers[index].ratio
+        headers.remove(at: index)
+        headers.forEach { $0.ratio *= 1.0 / (1.0 - deletingColumnRatio) }
+        rows.forEach { $0.cells.remove(at: index) }
+        stateDidChange.send(.tableColumns)
     }
 }
 

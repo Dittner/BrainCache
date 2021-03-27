@@ -78,7 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             BrainCacheContext.shared.menuAPI.subject.send(.createTable(columns: columns))
         }
     }
-    
+
     @IBAction func createList(_ sender: Any) {
         if let menuItem = sender as? NSMenuItem {
             let columns = Int(menuItem.title.filter { "0" ... "9" ~= $0 }) ?? 2

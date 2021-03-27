@@ -62,7 +62,7 @@ class Folder: DomainEntity, ObservableObject {
     func createListFile(columnCount: Int) -> File {
         var columns: [ListColumn] = []
         for i in 0 ... columnCount - 1 {
-            columns.append(ListColumn(text: "Column \(i + 1)", ratio: 1.0 / CGFloat(columnCount)))
+            columns.append(ListColumn(title: "Column \(i + 1)", text: "", ratio: 1.0 / CGFloat(columnCount)))
         }
 
         return File(uid: UID(), folderUID: uid, title: "New List", body: ListFileBody(columns: columns), useMonoFont: false, dispatcher: dispatcher)

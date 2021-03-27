@@ -20,6 +20,6 @@ struct VSeparatorView: View {
             .padding(.vertical, verticalPadding)
             .frame(width: 1)
             .frame(maxHeight: .infinity)
-            .zIndex(1)
+            .zIndex(-1)
     }
 }

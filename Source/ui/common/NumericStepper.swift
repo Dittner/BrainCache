@@ -35,14 +35,14 @@ struct NumericStepper: View {
                 if value > minimum {
                     value -= 1
                 }
-            }.background(Colors.black02.color)
+            }.background(Colors.black01.color)
             .cornerRadius(4)
 
             IconButton(name: .plus, size: 8, color: labelColor, width: SizeConstants.iconSize + 6, height: SizeConstants.iconSize + 6) {
                 if value < maximum {
                     value += 1
                 }
-            }.background(Colors.black02.color)
+            }.background(Colors.black01.color)
             .cornerRadius(4)
         }
     }

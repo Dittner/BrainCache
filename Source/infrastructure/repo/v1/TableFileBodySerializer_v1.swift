@@ -34,7 +34,7 @@ class TableFileBodySerializer_v1: ISerializer {
                                                         ratio: $0.ratio) }
 
         return try encoder.encode(TableFileBodyDTO_v1(headers: headers,
-                                                      rows: e.rows.map { $0.cells.map { $0.text } },
+                                                      rows: e.rows.filter{ $0.cells.reduce(0, {$0 + $1.text.count}) > 0}.map { $0.cells.map { $0.text } },
                                                       sortType: e.sortType,
                                                       sortByHeaderIndex: e.sortByHeaderIndex))
     }

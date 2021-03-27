@@ -11,7 +11,7 @@ import SwiftUI
 class TextFileBody: FileBody, ObservableObject {
     @Published var text: String
 
-    var stateDidChange = CurrentValueSubject<Bool, Never>(false)
+    var stateDidChange = PassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
 
     private var disposeBag: Set<AnyCancellable> = []
     init(text: String) {
@@ -21,7 +21,7 @@ class TextFileBody: FileBody, ObservableObject {
             .removeDuplicates()
             .dropFirst()
             .sink { _ in
-                self.stateDidChange.send(true)
+                self.stateDidChange.send(.textFileContent)
             }
             .store(in: &disposeBag)
     }

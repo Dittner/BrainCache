@@ -20,6 +20,7 @@ enum FontIcon: String {
     case minus = "\u{e908}"
     case list = "\u{e909}"
     case sort = "\u{e90a}"
+    case dropdown = "\u{e90b}"
 }
 
 enum FontName: String {

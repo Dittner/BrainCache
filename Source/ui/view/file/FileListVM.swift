@@ -45,9 +45,7 @@ class FileListVM: ObservableObject {
             .sink { event in
                 switch event {
                 case .deleteFile:
-                    if let file = self.selectedFile {
-                        self.context.entityRemover.removeFile(file)
-                    }
+                    self.deleteFile()
                 case let .monoFontSelected(value):
                     if let file = self.selectedFile {
                         file.useMonoFont = value
@@ -79,6 +77,18 @@ class FileListVM: ObservableObject {
     func deselectFile() {
         if selectedFile != nil {
             selectedFile = nil
+        }
+    }
+
+    func deleteFile() {
+        if let file = selectedFile {
+            context.entityRemover.removeFile(file)
+        }
+    }
+
+    func addColumn() {
+        if let listBody = selectedFile?.body as? ListFileBody {
+            listBody.addNewColumn()
         }
     }
 }

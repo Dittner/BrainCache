@@ -16,7 +16,8 @@ public struct Colors {
     static let textLight = NSColor(rgb: 0xe9f0f9)
     static let text = NSColor(rgb: 0xd0d7df)
     static let clear = NSColor(rgb: 0x000000, alpha: 0.000001)
-    static let black02 = NSColor(rgb: 0, alpha: 0.2)
+    static let black01 = NSColor(rgb: 0, alpha: 0.1)
+    static let selection = NSColor(rgb: 0x353638)
     static let separator = NSColor(rgb: 0xffFFff, alpha: 0.1)
     static let debugLines = NSColor(rgb: 0x00C3FF, alpha: 1)
     

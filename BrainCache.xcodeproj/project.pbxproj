@@ -14,7 +14,6 @@
 		5B288A992607595900CF175F /* Inputs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B288A982607595900CF175F /* Inputs.swift */; };
 		5B288A9F2607743C00CF175F /* Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B288A9E2607743C00CF175F /* Cache.swift */; };
 		5B3E16AA2605F28100D2CECC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3E16A92605F28100D2CECC /* AppDelegate.swift */; };
-		5B3E16AC2605F28100D2CECC /* BrainCacheApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3E16AB2605F28100D2CECC /* BrainCacheApp.swift */; };
 		5B3E16AE2605F28100D2CECC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B3E16AD2605F28100D2CECC /* Assets.xcassets */; };
 		5B3E16B12605F28100D2CECC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B3E16B02605F28100D2CECC /* Preview Assets.xcassets */; };
 		5B3E16B42605F28200D2CECC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5B3E16B22605F28200D2CECC /* Main.storyboard */; };
@@ -63,6 +62,7 @@
 		5BC1257F2609FB6700918AB3 /* DomainEntityRemover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC1257B2609FA7100918AB3 /* DomainEntityRemover.swift */; };
 		5BC1258E260A35FF00918AB3 /* NumericStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC1258D260A35FF00918AB3 /* NumericStepper.swift */; };
 		5BC12593260A508600918AB3 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC12592260A508600918AB3 /* File.swift */; };
+		5BDC40C1260F3E12000C95C4 /* BrainCacheApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3E16AB2605F28100D2CECC /* BrainCacheApp.swift */; };
 		5BE6D032260DF6FE000D0AA9 /* VScrollBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE6D031260DF6FE000D0AA9 /* VScrollBar.swift */; };
 		5BF9ADD5260BE514004C6AFC /* Grid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC12585260A275900918AB3 /* Grid.swift */; };
 		5BF9ADD8260BEB0E004C6AFC /* TableFileBodySerializer_v1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF9ADD7260BEB0E004C6AFC /* TableFileBodySerializer_v1.swift */; };
@@ -177,6 +177,7 @@
 			children = (
 				5B3E16A92605F28100D2CECC /* AppDelegate.swift */,
 				5B3E16B52605F28200D2CECC /* Info.plist */,
+				5B3E16E12606021200D2CECC /* resources */,
 				5B3E16BF2605F70200D2CECC /* infrastructure */,
 				5B3E16BE2605F6FA00D2CECC /* application */,
 				5B3E16C02605F70A00D2CECC /* ui */,
@@ -217,10 +218,10 @@
 		5B3E16C02605F70A00D2CECC /* ui */ = {
 			isa = PBXGroup;
 			children = (
-				5B3E16E12606021200D2CECC /* resources */,
 				5B3E16C92605FFAD00D2CECC /* common */,
 				5B3E16C22605FC9500D2CECC /* view */,
 				5B3E16B22605F28200D2CECC /* Main.storyboard */,
+				5B3E16AB2605F28100D2CECC /* BrainCacheApp.swift */,
 				5B3E16AF2605F28100D2CECC /* Preview Content */,
 			);
 			path = ui;
@@ -241,7 +242,6 @@
 			children = (
 				5B288A8826073F4D00CF175F /* file */,
 				5B3E172D2606487100D2CECC /* folder */,
-				5B3E16AB2605F28100D2CECC /* BrainCacheApp.swift */,
 			);
 			path = view;
 			sourceTree = "<group>";
@@ -457,11 +457,11 @@
 				5B288A8D2607409400CF175F /* FileListView.swift in Sources */,
 				5B3E174C26064D8800D2CECC /* TextFormatter.swift in Sources */,
 				5B3E175126065A2600D2CECC /* Buttons.swift in Sources */,
-				5B3E16AC2605F28100D2CECC /* BrainCacheApp.swift in Sources */,
 				5B3E16AA2605F28100D2CECC /* AppDelegate.swift in Sources */,
 				5BC1258E260A35FF00918AB3 /* NumericStepper.swift in Sources */,
 				5B288A8B2607408E00CF175F /* FileListVM.swift in Sources */,
 				5B3E17102606199100D2CECC /* JSONRepository.swift in Sources */,
+				5BDC40C1260F3E12000C95C4 /* BrainCacheApp.swift in Sources */,
 				5BC1257F2609FB6700918AB3 /* DomainEntityRemover.swift in Sources */,
 				5B3E171626061AA400D2CECC /* FileSystemAPI.swift in Sources */,
 				5B3E174A26064D8500D2CECC /* NSWindow++.swift in Sources */,

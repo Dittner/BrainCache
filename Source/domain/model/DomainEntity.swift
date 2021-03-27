@@ -24,3 +24,19 @@ extension DomainEntity: Equatable {
         lhs.uid == rhs.uid
     }
 }
+
+enum DomainEntityStateDidChangeEvent {
+    case tableTitle
+    case tableText
+    case tableRatio
+    case tableSorting
+    case tableRows
+    case tableColumns
+    
+    case textFileContent
+    
+    case listTitle
+    case listText
+    case listRatio
+    case listColumns
+}
