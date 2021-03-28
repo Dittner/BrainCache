@@ -8,7 +8,6 @@
 import Combine
 import SwiftUI
 
-
 class ListFileBody: FileBody {
     var stateDidChange = PassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
 
@@ -49,6 +48,13 @@ class ListFileBody: FileBody {
         let ratioFactor = CGFloat(columns.count) / CGFloat(columns.count + 1)
         columns.forEach { $0.ratio *= ratioFactor }
         columns.append(ListColumn(title: "Column \(columns.count + 1)", text: "", ratio: 1 - ratioFactor))
+        stateDidChange.send(.listColumns)
+    }
+
+    func moveColumn(fromIndex: Int, toIndex: Int) {
+        guard fromIndex < columns.count && toIndex < columns.count && fromIndex != toIndex else { return }
+        let srcColumn = columns.remove(at: fromIndex)
+        columns.insert(srcColumn, at: toIndex)
         stateDidChange.send(.listColumns)
     }
 

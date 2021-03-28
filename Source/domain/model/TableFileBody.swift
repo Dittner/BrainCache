@@ -63,7 +63,7 @@ class TableFileBody: FileBody, ObservableObject {
         rows.append(row)
         stateDidChange.send(.tableRows)
     }
-    
+
     func addNewColumn() {
         let ratioFactor = CGFloat(headers.count) / CGFloat(headers.count + 1)
         headers.forEach { $0.ratio *= ratioFactor }
@@ -72,14 +72,32 @@ class TableFileBody: FileBody, ObservableObject {
         stateDidChange.send(.tableColumns)
     }
 
+    func moveColumn(fromIndex: Int, toIndex: Int) {
+        guard fromIndex < headers.count && toIndex < headers.count && fromIndex != toIndex else { return }
+        let srcHeader = headers.remove(at: fromIndex)
+        headers.insert(srcHeader, at: toIndex)
+
+        for row in rows {
+            let srcCell = row.cells.remove(at: fromIndex)
+            row.cells.insert(srcCell, at: toIndex)
+        }
+        
+        if sortByHeaderIndex == toIndex {
+            sortByHeaderIndex = fromIndex
+        } else if sortByHeaderIndex == fromIndex {
+            sortByHeaderIndex = toIndex
+        }
+        stateDidChange.send(.tableColumns)
+    }
+
     func deleteColumn(at index: Int) {
         guard headers.count > 1 else { return }
         guard index < headers.count else { return }
-        
+
         if sortByHeaderIndex == index {
             sortByHeaderIndex -= 1
         }
-        
+
         let deletingColumnRatio = headers[index].ratio
         headers.remove(at: index)
         headers.forEach { $0.ratio *= 1.0 / (1.0 - deletingColumnRatio) }

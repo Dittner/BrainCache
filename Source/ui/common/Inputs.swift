@@ -196,47 +196,45 @@ struct EditableText: View {
 }
 
 struct EditableMultilineText: View {
-    @ObservedObject private var notifier = EditableTextManager.shared
+    @ObservedObject private var textManager = EditableTextManager.shared
+    @ObservedObject private var notifier = HeightDidChangeNotifier()
     let text: String
     let uid: UID
     let alignment: Alignment
+    let width: CGFloat
     let useMonoFont: Bool
     let searchText: String
     let action: (String) -> Void
 
-    init(_ text: String, uid: UID, alignment: Alignment = .leading, useMonoFont: Bool = false, searchText: String = "", action: @escaping (String) -> Void) {
+    init(_ text: String, uid: UID, alignment: Alignment = .leading, width: CGFloat, useMonoFont: Bool = false, searchText: String = "", action: @escaping (String) -> Void) {
         self.text = text
         self.uid = uid
         self.alignment = alignment
+        self.width = width
         self.useMonoFont = useMonoFont
         self.searchText = searchText
         self.action = action
     }
 
     var body: some View {
-        if notifier.isEditing && notifier.ownerUID == uid {
+        if textManager.isEditing && textManager.ownerUID == uid {
             VStack(alignment: .trailing, spacing: 2) {
-                if useMonoFont {
-                    NSTextEditor(text: $notifier.editingText, font: NSFont(name: .mono, size: SizeConstants.fontSize), textColor: Colors.text, lineHeight: SizeConstants.fontLineHeight, highlightedText: searchText)
-                        .padding(.leading, SizeConstants.padding - 5)
-                        .frame(height: SizeConstants.listCellHeight * 8)
-                        .border(Colors.focusColor.color)
-                } else {
-                    NSTextEditor(text: $notifier.editingText, font: NSFont(name: .pragmatica, size: SizeConstants.fontSize), textColor: Colors.text, lineHeight: SizeConstants.fontLineHeight, highlightedText: searchText)
-                        .padding(.leading, SizeConstants.padding - 5)
-                        .frame(height: SizeConstants.listCellHeight * 8)
-                        .border(Colors.focusColor.color)
-                }
+                TextArea(text: $textManager.editingText, height: $notifier.height, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight, width: width - 2 * SizeConstants.padding)
+                    .colorScheme(.dark)
+                    .offset(x: -4)
+                    .padding(.horizontal, SizeConstants.padding)
+                    .frame(height: max(SizeConstants.listCellHeight, notifier.height))
+                    .border(Colors.focusColor.color)
 
-                HStack(alignment: /*@START_MENU_TOKEN@*/ .center/*@END_MENU_TOKEN@*/, spacing: 2) {
+                HStack(alignment: .center, spacing: 2) {
                     TextButton(text: "Cancel", textColor: Colors.appBG.color, bgColor: Colors.focusColor.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
-                        notifier.isEditing = false
+                        textManager.isEditing = false
                     }
                     .cornerRadius(2)
 
                     TextButton(text: "Save", textColor: Colors.appBG.color, bgColor: Colors.focusColor.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), height: SizeConstants.listCellHeight, padding: 5) {
-                        action(notifier.editingText)
-                        notifier.isEditing = false
+                        action(textManager.editingText)
+                        textManager.isEditing = false
                     }
                     .cornerRadius(2)
                 }
@@ -247,16 +245,16 @@ struct EditableMultilineText: View {
                 .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
                 .padding(.vertical, 5)
                 .padding(.horizontal, SizeConstants.padding)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
+                .frame(maxHeight: .infinity, alignment: alignment)
                 .lineLimit(nil)
                 .lineSpacing(5)
                 .fixedSize(horizontal: false, vertical: true)
                 .multilineTextAlignment(.leading)
                 .contentShape(Rectangle())
                 .onTapGesture(count: 2) {
-                    notifier.editingText = text
-                    notifier.ownerUID = uid
-                    notifier.isEditing = true
+                    textManager.editingText = text
+                    textManager.ownerUID = uid
+                    textManager.isEditing = true
                 }
         }
     }
