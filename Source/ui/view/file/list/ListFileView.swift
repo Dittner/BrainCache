@@ -54,7 +54,7 @@ struct ListFileView: View {
 
 struct ListHeaderView: View {
     @ObservedObject private var lc: ListController
-    private var dragProcessor: ListColumnDragProcessor
+    @ObservedObject private var dragProcessor: ListColumnDragProcessor
     let useMonoFont: Bool
 
     init(lc: ListController, useMonoFont: Bool) {
@@ -73,8 +73,9 @@ struct ListHeaderView: View {
                     }
                     .foregroundColor(Colors.textDark.color)
                     .frame(width: column.ratio * geometry.size.width, height: SizeConstants.listCellHeight)
+                    .border(dragProcessor.dropCandidate?.uid == column.uid ? Colors.focusColor.color : Colors.clear.color)
                     .onDrag { self.dragProcessor.draggingColumn = column; return NSItemProvider(object: NSString()) }
-                    .onDrop(of: ["public.plain-text"], delegate: DropViewDelegate { self.dragProcessor.perform(destColumn: column) })
+                    .onDrop(of: ["public.plain-text"], delegate: ListColumnDropViewDelegate(destColumn: column, dragProcessor: dragProcessor))
                 }
             }.frame(height: SizeConstants.listCellHeight)
         }

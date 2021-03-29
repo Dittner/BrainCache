@@ -13,6 +13,7 @@
 		5B288A8D2607409400CF175F /* FileListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B288A8926073F5500CF175F /* FileListView.swift */; };
 		5B288A992607595900CF175F /* Inputs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B288A982607595900CF175F /* Inputs.swift */; };
 		5B288A9F2607743C00CF175F /* Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B288A9E2607743C00CF175F /* Cache.swift */; };
+		5B28909A26122F97005F90D6 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B28909926122F97005F90D6 /* Async.swift */; };
 		5B3E16AA2605F28100D2CECC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3E16A92605F28100D2CECC /* AppDelegate.swift */; };
 		5B3E16AE2605F28100D2CECC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B3E16AD2605F28100D2CECC /* Assets.xcassets */; };
 		5B3E16B12605F28100D2CECC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B3E16B02605F28100D2CECC /* Preview Assets.xcassets */; };
@@ -79,6 +80,7 @@
 		5B288A8A26073F6E00CF175F /* FileListVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileListVM.swift; sourceTree = "<group>"; };
 		5B288A982607595900CF175F /* Inputs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inputs.swift; sourceTree = "<group>"; };
 		5B288A9E2607743C00CF175F /* Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cache.swift; sourceTree = "<group>"; };
+		5B28909926122F97005F90D6 /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		5B3E16A62605F28100D2CECC /* BrainCache.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BrainCache.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B3E16A92605F28100D2CECC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5B3E16AB2605F28100D2CECC /* BrainCacheApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrainCacheApp.swift; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 				5B3E16C62605FF7200D2CECC /* UID.swift */,
 				5B3E16C72605FF9B00D2CECC /* DateTimeUtils.swift */,
 				5B3E16DA260600AD00D2CECC /* Array++.swift */,
+				5B28909926122F97005F90D6 /* Async.swift */,
 				5BA4DCE0260B7B7A005ED5F1 /* Collection++.swift */,
 				5B3E16DD2606010000D2CECC /* String++.swift */,
 				5B3E16DE2606010C00D2CECC /* Color++.swift */,
@@ -483,6 +486,7 @@
 				5B3E174C26064D8800D2CECC /* TextFormatter.swift in Sources */,
 				5B3E175126065A2600D2CECC /* Buttons.swift in Sources */,
 				5B3E16AA2605F28100D2CECC /* AppDelegate.swift in Sources */,
+				5B28909A26122F97005F90D6 /* Async.swift in Sources */,
 				5BC1258E260A35FF00918AB3 /* NumericStepper.swift in Sources */,
 				5B288A8B2607408E00CF175F /* FileListVM.swift in Sources */,
 				5B3E17102606199100D2CECC /* JSONRepository.swift in Sources */,

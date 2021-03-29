@@ -86,7 +86,7 @@ struct TableFileView: View {
 
 struct TableHeaderView: View {
     @ObservedObject private var tc: TableController
-    private var dragProcessor: TableHeaderDragProcessor
+    @ObservedObject private var dragProcessor: TableHeaderDragProcessor
     let useMonoFont: Bool
 
     init(_ tc: TableController, useMonoFont: Bool) {
@@ -114,10 +114,10 @@ struct TableHeaderView: View {
                         }
                     }
                     .onDrag { self.dragProcessor.draggingHeader = header; return NSItemProvider(object: NSString()) }
-                    .onDrop(of: ["public.plain-text"], delegate: DropViewDelegate { self.dragProcessor.perform(destHeader: header) })
-
+                    .onDrop(of: ["public.plain-text"], delegate: TableHeaderDropViewDelegate(destHeader: header, dragProcessor: dragProcessor))
                     .foregroundColor(tc.table.sortByHeaderIndex == index ? Colors.textLight.color : Colors.textDark.color)
                     .frame(width: header.ratio * geometry.size.width, height: SizeConstants.listCellHeight)
+                    .border(dragProcessor.dropCandidate?.uid == header.uid ? Colors.focusColor.color : Colors.clear.color)
                     .if(tc.table.sortByHeaderIndex != index) {
                         $0.highPriorityGesture(
                             TapGesture()

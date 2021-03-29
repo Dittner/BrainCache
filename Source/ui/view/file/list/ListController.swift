@@ -65,34 +65,6 @@ class ColumnLine: ObservableObject, Identifiable {
     }
 }
 
-class ListColumnDragProcessor {
-    let list: ListFileBody
-    var draggingColumn: ListColumn?
-
-    init(_ list: ListFileBody) {
-        self.list = list
-    }
-
-    func perform(destColumn: ListColumn) -> Bool {
-        guard let srcColumn = draggingColumn else { return false }
-
-        let fromIndex = list.columns.firstIndex { $0.uid == srcColumn.uid } ?? 0
-        let toIndex = list.columns.firstIndex { $0.uid == destColumn.uid } ?? 0
-
-        if fromIndex != toIndex {
-            withAnimation {
-                list.moveColumn(fromIndex: fromIndex, toIndex: toIndex)
-                draggingColumn = nil
-            }
-            draggingColumn = nil
-            return true
-        } else {
-            draggingColumn = nil
-            return false
-        }
-    }
-}
-
 class ColumnLineDragProcessor: ObservableObject {
     @Published var curDragOffset: CGFloat = 0
     @Published var curDragLine: ColumnLine? = nil
@@ -122,5 +94,68 @@ class ColumnLineDragProcessor: ObservableObject {
             return curDragLine.leftColumn.ratio + relativeOffset > minRatio && curDragLine.rightColumn.ratio - relativeOffset > minRatio
         }
         return false
+    }
+}
+
+class ListColumnDragProcessor: ObservableObject {
+    let list: ListFileBody
+
+    @Published var draggingColumn: ListColumn?
+    @Published var dropCandidate: ListColumn?
+
+    init(_ list: ListFileBody) {
+        self.list = list
+    }
+
+    func perform() -> Bool {
+        guard let draggingColumn = draggingColumn else { return false }
+        guard let dropCandidate = dropCandidate else { return false }
+
+        let fromIndex = list.columns.firstIndex { $0.uid == draggingColumn.uid } ?? 0
+        let toIndex = list.columns.firstIndex { $0.uid == dropCandidate.uid } ?? 0
+
+        self.draggingColumn = nil
+        self.dropCandidate = nil
+
+        if fromIndex != toIndex {
+            withAnimation {
+                Async.after(milliseconds: 100) { [weak self] in
+                    self?.list.moveColumn(fromIndex: fromIndex, toIndex: toIndex)
+                }
+            }
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+struct ListColumnDropViewDelegate: DropDelegate {
+    let destColumn: ListColumn
+    let dragProcessor: ListColumnDragProcessor
+    init(destColumn: ListColumn, dragProcessor: ListColumnDragProcessor) {
+        self.destColumn = destColumn
+        self.dragProcessor = dragProcessor
+    }
+
+    func validateDrop(info: DropInfo) -> Bool {
+        guard let draggingColumn = dragProcessor.draggingColumn else { return false }
+        return draggingColumn.uid != destColumn.uid
+    }
+
+    func dropEntered(info: DropInfo) {
+        dragProcessor.dropCandidate = destColumn
+    }
+
+    func dropExited(info: DropInfo) {
+        dragProcessor.dropCandidate = nil
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        return dragProcessor.perform()
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        return DropProposal(operation: .move)
     }
 }

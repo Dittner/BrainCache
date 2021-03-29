@@ -114,46 +114,61 @@ class TableLineDragProcessor: ObservableObject {
     }
 }
 
-class TableHeaderDragProcessor {
-    let table:TableFileBody
-    var draggingHeader:TableHeader?
-    
-    init(_ table:TableFileBody) {
+class TableHeaderDragProcessor: ObservableObject {
+    let table: TableFileBody
+    @Published var draggingHeader: TableHeader?
+    @Published var dropCandidate: TableHeader?
+
+    init(_ table: TableFileBody) {
         self.table = table
     }
-    
-    func perform(destHeader: TableHeader) -> Bool {
-        guard let srcHeader = draggingHeader else { return false }
 
-        let fromIndex = table.headers.firstIndex { $0.uid == srcHeader.uid } ?? 0
-        let toIndex = table.headers.firstIndex { $0.uid == destHeader.uid } ?? 0
+    func perform() -> Bool {
+        guard let draggingHeader = draggingHeader else { return false }
+        guard let dropCandidate = dropCandidate else { return false }
+
+        let fromIndex = table.headers.firstIndex { $0.uid == draggingHeader.uid } ?? 0
+        let toIndex = table.headers.firstIndex { $0.uid == dropCandidate.uid } ?? 0
+
+        self.draggingHeader = nil
+        self.dropCandidate = nil
 
         if fromIndex != toIndex {
             withAnimation {
-                table.moveColumn(fromIndex: fromIndex, toIndex: toIndex)
-                draggingHeader = nil
+                Async.after(milliseconds: 100) { [weak self] in
+                    self?.table.moveColumn(fromIndex: fromIndex, toIndex: toIndex)
+                }
             }
-            draggingHeader = nil
             return true
         } else {
-            draggingHeader = nil
             return false
         }
     }
 }
 
-struct DropViewDelegate: DropDelegate {
-    let action: () -> Bool
-    init(action: @escaping () -> Bool) {
-        self.action = action
+struct TableHeaderDropViewDelegate: DropDelegate {
+    let destHeader: TableHeader
+    let dragProcessor: TableHeaderDragProcessor
+    init(destHeader: TableHeader, dragProcessor: TableHeaderDragProcessor) {
+        self.destHeader = destHeader
+        self.dragProcessor = dragProcessor
     }
 
     func validateDrop(info: DropInfo) -> Bool {
-        return info.hasItemsConforming(to: ["public.plain-text"])
+        guard let srcHeader = dragProcessor.draggingHeader else { return false }
+        return srcHeader.uid != destHeader.uid
+    }
+
+    func dropEntered(info: DropInfo) {
+        dragProcessor.dropCandidate = destHeader
+    }
+
+    func dropExited(info: DropInfo) {
+        dragProcessor.dropCandidate = nil
     }
 
     func performDrop(info: DropInfo) -> Bool {
-        return action()
+        return dragProcessor.perform()
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
