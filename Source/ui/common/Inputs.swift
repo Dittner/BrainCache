@@ -154,7 +154,7 @@ struct EditableText: View {
     let countClickActivation: Int
     let action: (String) -> Void
 
-    init(_ text: String, uid: UID, alignment: Alignment = .leading, useMonoFont: Bool = false, countClickActivation:Int = 2, action: @escaping (String) -> Void) {
+    init(_ text: String, uid: UID, alignment: Alignment = .leading, useMonoFont: Bool = false, countClickActivation: Int = 2, action: @escaping (String) -> Void) {
         self.text = text
         self.uid = uid
         self.alignment = alignment
@@ -172,7 +172,6 @@ struct EditableText: View {
                     action(notifier.editingText)
                     notifier.isEditing = false
                 })
-                .focusable()
                     .textFieldStyle(PlainTextFieldStyle())
                     .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
                     .padding(.horizontal, SizeConstants.padding)
@@ -219,7 +218,7 @@ struct EditableMultilineText: View {
     var body: some View {
         if textManager.isEditing && textManager.ownerUID == uid {
             VStack(alignment: .trailing, spacing: 2) {
-                TextArea(text: $textManager.editingText, height: $notifier.height, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight, width: width - 2 * SizeConstants.padding)
+                TextArea(text: $textManager.editingText, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight)
                     .colorScheme(.dark)
                     .offset(x: -4)
                     .padding(.horizontal, SizeConstants.padding)
@@ -263,11 +262,34 @@ struct EditableMultilineText: View {
 struct TextArea: NSViewRepresentable {
     @Binding var text: String
     @Binding var height: CGFloat
+    var width: CGFloat
     let textColor: NSColor
     let font: NSFont
     var highlightedText: String = ""
-    var lineHeight: CGFloat? = nil
-    var width: CGFloat
+    var lineHeight: CGFloat?
+    var action: ((String) -> Void)?
+
+    init(text: Binding<String>, height: Binding<CGFloat>, width: CGFloat, textColor: NSColor, font: NSFont, highlightedText: String, lineHeight: CGFloat? = nil) {
+        _text = text
+        _height = height
+        self.width = width
+        self.textColor = textColor
+        self.font = font
+        self.highlightedText = highlightedText
+        self.lineHeight = lineHeight
+        action = nil
+    }
+
+    init(text: String, height: Binding<CGFloat>, width: CGFloat, textColor: NSColor, font: NSFont, highlightedText: String, lineHeight: CGFloat? = nil, action: @escaping (String) -> Void) {
+        _text = Binding.constant(text)
+        _height = height
+        self.width = width
+        self.textColor = textColor
+        self.font = font
+        self.highlightedText = highlightedText
+        self.lineHeight = lineHeight
+        self.action = action
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -303,7 +325,7 @@ struct TextArea: NSViewRepresentable {
     }
 
     func updateNSView(_ textArea: CustomNSTextView, context: Context) {
-        if textArea.string != text || textArea.curHighlightedText != highlightedText || textArea.font != self.font {
+        if textArea.string != text || textArea.curHighlightedText != highlightedText || textArea.font != font {
             textArea.curHighlightedText = highlightedText
             textArea.string = text
 
@@ -348,7 +370,12 @@ struct TextArea: NSViewRepresentable {
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
-            parent.text = textView.string
+            
+            if parent.action != nil {
+                parent.action?(textView.string)
+            } else {
+                parent.text = textView.string
+            }
         }
 
         func textView(_ textView: NSTextView, willChangeSelectionFromCharacterRange oldSelectedCharRange: NSRange, toCharacterRange newSelectedCharRange: NSRange) -> NSRange {
@@ -356,7 +383,6 @@ struct TextArea: NSViewRepresentable {
         }
     }
 }
-
 
 class HeightDidChangeNotifier: ObservableObject {
     @Published var height: CGFloat = 0

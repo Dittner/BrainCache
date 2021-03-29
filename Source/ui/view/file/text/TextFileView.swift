@@ -50,7 +50,7 @@ struct TextFileBodyView: View {
     }
 
     var body: some View {
-        TextArea(text: $fileBody.text, height: $notifier.height, textColor: Colors.text, font: font, highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight, width: width - 2 * SizeConstants.padding)
+        TextArea(text: $fileBody.text, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: font, highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight)
             .colorScheme(.dark)
             .offset(x: -4)
             .padding(.horizontal, SizeConstants.padding)

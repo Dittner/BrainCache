@@ -17,7 +17,6 @@ struct ListFileView: View {
     private let headerHeight: CGFloat = SizeConstants.listCellHeight
 
     init(file: File, fileBody: ListFileBody, folder: Folder) {
-        print("ListFileBodyView init, use mono font = \(file.useMonoFont)")
         self.file = file
         self.fileBody = fileBody
         self.folder = folder
@@ -32,7 +31,7 @@ struct ListFileView: View {
             VScrollBar(uid: file.uid) {
                 HStack(alignment: .top, spacing: 0) {
                     ForEach(fileBody.columns, id: \.uid) { column in
-                        ListColumnCell(column: column, useMonoFont: file.useMonoFont, searchText: folder.search, width: column.ratio * (proxy.size.width - scrollerWidth), minHeight: proxy.size.height - SizeConstants.listCellHeight - headerHeight)
+                        ListColumnCell(lc: lc, column: column, useMonoFont: file.useMonoFont, searchText: folder.search, width: column.ratio * (proxy.size.width - scrollerWidth), minHeight: proxy.size.height - SizeConstants.listCellHeight - headerHeight)
                             .frame(width: column.ratio * (proxy.size.width - scrollerWidth))
                     }
                 }
@@ -59,7 +58,7 @@ struct ListHeaderView: View {
 
     init(lc: ListController, useMonoFont: Bool) {
         self.lc = lc
-        self.dragProcessor = lc.listColumnDragProcessor
+        dragProcessor = lc.listColumnDragProcessor
         self.useMonoFont = useMonoFont
     }
 
@@ -69,7 +68,7 @@ struct ListHeaderView: View {
                 ForEach(lc.list.columns.enumeratedArray(), id: \.offset) { _, column in
                     EditableText(column.title, uid: column.uid, alignment: .center, useMonoFont: useMonoFont) { value in
                         self.lc.updateColumn(column, title: value)
-                        column.title = value
+                        lc.updateColumn(column, title: value)
                     }
                     .foregroundColor(Colors.textDark.color)
                     .frame(width: column.ratio * geometry.size.width, height: SizeConstants.listCellHeight)
@@ -83,7 +82,8 @@ struct ListHeaderView: View {
 }
 
 struct ListColumnCell: View {
-    @ObservedObject private var column: ListColumn
+    private let lc: ListController
+    private let column: ListColumn
     @ObservedObject private var notifier = HeightDidChangeNotifier()
     let useMonoFont: Bool
     let searchText: String
@@ -91,8 +91,8 @@ struct ListColumnCell: View {
     let width: CGFloat
     let minHeight: CGFloat
 
-    init(column: ListColumn, useMonoFont: Bool, searchText: String, width: CGFloat, minHeight: CGFloat) {
-        print("ListColumnCell init, useMonoFont = \(useMonoFont)")
+    init(lc: ListController, column: ListColumn, useMonoFont: Bool, searchText: String, width: CGFloat, minHeight: CGFloat) {
+        self.lc = lc
         self.column = column
         self.useMonoFont = useMonoFont
         self.searchText = searchText
@@ -102,17 +102,19 @@ struct ListColumnCell: View {
     }
 
     var body: some View {
-        TextArea(text: $column.text, height: $notifier.height, textColor: Colors.text, font: font, highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight, width: width - 2 * SizeConstants.padding)
-            .colorScheme(.dark)
-            .offset(x: -4)
-            .padding(.horizontal, SizeConstants.padding)
-            .frame(height: max(minHeight - 5, notifier.height))
+        TextArea(text: column.text, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: font, highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight) { text in
+            self.lc.updateColumn(column, text: text)
+        }
+        .colorScheme(.dark)
+        .offset(x: -4)
+        .padding(.horizontal, SizeConstants.padding)
+        .frame(height: max(minHeight - 5, notifier.height))
     }
 }
 
 struct ListLinesView: View {
-    @ObservedObject private var dragProcessor: ColumnLineDragProcessor
     @ObservedObject private var lc: ListController
+    @ObservedObject private var dragProcessor: ColumnLineDragProcessor
 
     init(_ lc: ListController) {
         self.lc = lc
@@ -121,7 +123,7 @@ struct ListLinesView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ForEach(lc.lines, id: \.id) { line in
+            ForEach(lc.lines, id: \.uid) { line in
                 ColumnLineView()
                     .offset(x: line.uid == self.dragProcessor.curDragLine?.uid ? line.position * geometry.size.width + self.dragProcessor.curDragOffset : line.position * geometry.size.width)
                     .gesture(DragGesture()

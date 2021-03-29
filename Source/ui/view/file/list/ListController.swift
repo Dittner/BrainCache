@@ -19,7 +19,7 @@ class ListController: ObservableObject {
     private var disposeBag: Set<AnyCancellable> = []
     init(list: ListFileBody) {
         self.list = list
-        columnLineDragProcessor = ColumnLineDragProcessor()
+        columnLineDragProcessor = ColumnLineDragProcessor(list)
         listColumnDragProcessor = ListColumnDragProcessor(list)
         updateListLines()
         list.stateDidChange
@@ -33,14 +33,17 @@ class ListController: ObservableObject {
 
     private func updateListLines() {
         lines = []
+        var newLines: [ColumnLine] = []
         var total: CGFloat = 0
         for (index, c) in list.columns.enumerated() {
             if index < list.columns.count - 1 {
                 total += c.ratio
                 let line = ColumnLine(position: total, leftColumn: list.columns[index], rightColumn: list.columns[index + 1])
-                lines.append(line)
+                newLines.append(line)
             }
         }
+
+        lines = newLines
     }
 
     func updateListView() {
@@ -48,11 +51,15 @@ class ListController: ObservableObject {
     }
 
     func updateColumn(_ column: ListColumn, title: String) {
-        column.title = title
+        list.updateColumn(column, title: title)
+    }
+    
+    func updateColumn(_ column: ListColumn, text: String) {
+        list.updateColumn(column, text: text)
     }
 }
 
-class ColumnLine: ObservableObject, Identifiable {
+class ColumnLine: ObservableObject {
     let uid = UID()
     @Published var position: CGFloat
     @Published var leftColumn: ListColumn
@@ -66,8 +73,13 @@ class ColumnLine: ObservableObject, Identifiable {
 }
 
 class ColumnLineDragProcessor: ObservableObject {
+    let list:ListFileBody
     @Published var curDragOffset: CGFloat = 0
     @Published var curDragLine: ColumnLine? = nil
+    
+    init(_ list:ListFileBody) {
+        self.list = list
+    }
 
     private let minRatio: CGFloat = 0.05
 
@@ -82,9 +94,10 @@ class ColumnLineDragProcessor: ObservableObject {
                 offset = relativeOffset
             }
             curDragLine.position += offset
-            curDragLine.leftColumn.ratio += offset
-            curDragLine.rightColumn.ratio -= offset
+            list.updateColumn(curDragLine.leftColumn, ratio: curDragLine.leftColumn.ratio + offset)
+            list.updateColumn(curDragLine.rightColumn, ratio: curDragLine.rightColumn.ratio - offset)
         }
+
         curDragLine = nil
         curDragOffset = 0
     }

@@ -13,35 +13,8 @@ class ListFileBody: FileBody {
 
     private(set) var columns: [ListColumn]
 
-    private var disposeBag: Set<AnyCancellable> = []
     init(columns: [ListColumn]) {
         self.columns = columns
-
-        for c in columns {
-            c.$title
-                .removeDuplicates()
-                .dropFirst()
-                .sink { _ in
-                    self.stateDidChange.send(.listTitle)
-                }
-                .store(in: &disposeBag)
-
-            c.$text
-                .removeDuplicates()
-                .dropFirst()
-                .sink { _ in
-                    self.stateDidChange.send(.listText)
-                }
-                .store(in: &disposeBag)
-
-            c.$ratio
-                .removeDuplicates()
-                .dropFirst()
-                .sink { _ in
-                    self.stateDidChange.send(.listRatio)
-                }
-                .store(in: &disposeBag)
-        }
     }
 
     func addNewColumn() {
@@ -58,6 +31,21 @@ class ListFileBody: FileBody {
         stateDidChange.send(.listColumns)
     }
 
+    func updateColumn(_ c: ListColumn, ratio: CGFloat) {
+        c.ratio = ratio
+        stateDidChange.send(.listRatio)
+    }
+
+    func updateColumn(_ c: ListColumn, title: String) {
+        c.title = title
+        stateDidChange.send(.listTitle)
+    }
+
+    func updateColumn(_ c: ListColumn, text: String) {
+        c.text = text
+        stateDidChange.send(.listText)
+    }
+
     func deleteColumn(at index: Int) {
         guard columns.count > 1 else { return }
         guard index < columns.count else { return }
@@ -69,11 +57,11 @@ class ListFileBody: FileBody {
     }
 }
 
-class ListColumn: ObservableObject {
+class ListColumn {
     let uid: UID = UID()
-    @Published var title: String
-    @Published var text: String
-    @Published var ratio: CGFloat // 0..1
+    fileprivate(set) var title: String
+    fileprivate(set) var text: String
+    fileprivate(set) var ratio: CGFloat // 0..1
 
     init(title: String, text: String, ratio: CGFloat) {
         self.title = title
