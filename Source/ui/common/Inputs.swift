@@ -1,5 +1,5 @@
 //
-//  NSTextEditor.swift
+//  Inputs.swift
 //  BrainCache
 //
 //  Created by Alexander Dittner on 27.01.2020.
@@ -7,6 +7,95 @@
 //
 
 import SwiftUI
+
+extension NSTextField {
+    func becomeFirstResponderWithDelay() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
+            self.becomeFirstResponder()
+        }
+    }
+}
+
+struct TextInput: NSViewRepresentable {
+    private static var focusedField: NSTextField?
+    public static let tf: NSTextField = NSTextField()
+
+    public let title: String
+    @Binding var text: String
+    public let textColor: NSColor
+    public let font: NSFont
+    public let alignment: NSTextAlignment
+    public var isFocused: Bool
+    public let isSecure: Bool
+    public let format: String?
+    public let isEditable: Bool
+    public let onEnterAction: (() -> Void)?
+    public let onFocusChangedAction: ((Bool) -> Void)?
+
+    func makeNSView(context: Context) -> NSTextField {
+        let tf = isSecure ? NSSecureTextField() : NSTextField()
+        tf.isBordered = false
+        tf.backgroundColor = nil
+        tf.focusRingType = .none
+        tf.textColor = textColor
+        tf.placeholderString = title
+        tf.allowsEditingTextAttributes = false
+        tf.alignment = alignment
+        tf.isEditable = isEditable
+        tf.delegate = context.coordinator
+
+        return tf
+    }
+
+    func updateNSView(_ nsView: NSTextField, context: Context) {
+        context.coordinator.parent = self
+        nsView.isEditable = isEditable
+        nsView.stringValue = text
+        nsView.font = font
+
+        if isFocused && TextInput.focusedField != nsView {
+            TextInput.focusedField = nsView
+            nsView.becomeFirstResponderWithDelay()
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(self)
+    }
+
+    class Coordinator: NSObject, NSTextFieldDelegate {
+        var parent: TextInput
+
+        init(_ parent: TextInput) {
+            self.parent = parent
+        }
+
+        func controlTextDidChange(_ obj: Notification) {
+            if let textField = obj.object as? NSTextField {
+                if let format = parent.format, textField.stringValue.count > 0, !textField.stringValue.matches(predicate: format.asPredicate) {
+                    textField.stringValue = parent.text
+                } else if parent.text != textField.stringValue {
+                    parent.text = textField.stringValue
+                }
+            }
+        }
+
+        func controlTextDidBeginEditing(_ obj: Notification) {
+            parent.onFocusChangedAction?(true)
+        }
+
+        func controlTextDidEndEditing(_ obj: Notification) {
+            parent.onFocusChangedAction?(false)
+        }
+
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) {
+                parent.onEnterAction?()
+            }
+            return false
+        }
+    }
+}
 
 class EditorController: NSViewController {
     var textView = CustomNSTextView()
@@ -47,7 +136,6 @@ class CustomNSTextView: NSTextView {
 
     var contentSize: CGSize {
         guard let layoutManager = layoutManager, let textContainer = textContainer else {
-            print("textView no layoutManager or textContainer")
             return .zero
         }
 
@@ -70,7 +158,6 @@ struct NSTextEditor: NSViewControllerRepresentable {
     func makeNSViewController(context: Context) -> EditorController {
         let vc = EditorController()
         vc.textView.delegate = context.coordinator
-        // vc.textView.textStorage?.delegate = context.coordinator
         return vc
     }
 
@@ -153,6 +240,7 @@ struct EditableText: View {
     let useMonoFont: Bool
     let countClickActivation: Int
     let action: (String) -> Void
+    let font: NSFont
 
     init(_ text: String, uid: UID, alignment: Alignment = .leading, useMonoFont: Bool = false, countClickActivation: Int = 2, action: @escaping (String) -> Void) {
         self.text = text
@@ -161,22 +249,35 @@ struct EditableText: View {
         self.useMonoFont = useMonoFont
         self.countClickActivation = countClickActivation
         self.action = action
+        font = NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize)
+        notifier.editingText = ""
     }
 
     var body: some View {
         GeometryReader { proxy in
             if notifier.isEditing && notifier.ownerUID == uid {
-                TextField("", text: $notifier.editingText, onEditingChanged: { editing in
-                    notifier.isEditing = editing
-                }, onCommit: {
+                RoundedRectangle(cornerRadius: 2)
+                    .stroke(Colors.focusColor.color)
+                    .frame(width: proxy.size.width - 3, height: proxy.size.height - 2)
+                    .offset(x: 1, y: 0)
+
+                TextInput(title: "", text: $notifier.editingText, textColor: Colors.text, font: font, alignment: .left, isFocused: notifier.isEditing && notifier.ownerUID == uid, isSecure: false, format: nil, isEditable: notifier.isEditing && notifier.ownerUID == uid, onEnterAction: {
                     action(notifier.editingText)
                     notifier.isEditing = false
-                })
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
-                    .padding(.horizontal, SizeConstants.padding)
+                }, onFocusChangedAction: { hasFocus in
+                    if notifier.isEditing && !hasFocus {
+                        notifier.isEditing = false
+                        notifier.editingText = ""
+                    }
+                }).padding(.leading, SizeConstants.padding - 2)
                     .frame(width: proxy.size.width, height: proxy.size.height)
-                    .border(Colors.focusColor.color)
+                    .contentShape(Rectangle())
+                    .onTapGesture(count: countClickActivation) {
+                        notifier.editingText = text
+                        notifier.ownerUID = uid
+                        notifier.isEditing = true
+                    }
+
             } else {
                 Text(self.text)
                     .lineLimit(1)
@@ -262,12 +363,12 @@ struct EditableMultilineText: View {
 struct TextArea: NSViewRepresentable {
     @Binding var text: String
     @Binding var height: CGFloat
-    var width: CGFloat
+    let width: CGFloat
     let textColor: NSColor
     let font: NSFont
-    var highlightedText: String = ""
-    var lineHeight: CGFloat?
-    var action: ((String) -> Void)?
+    let highlightedText: String
+    let lineHeight: CGFloat?
+    let action: ((String) -> Void)?
 
     init(text: Binding<String>, height: Binding<CGFloat>, width: CGFloat, textColor: NSColor, font: NSFont, highlightedText: String, lineHeight: CGFloat? = nil) {
         _text = text
@@ -325,22 +426,25 @@ struct TextArea: NSViewRepresentable {
     }
 
     func updateNSView(_ textArea: CustomNSTextView, context: Context) {
-        if textArea.string != text || textArea.curHighlightedText != highlightedText || textArea.font != font {
+        //need update parent, otherwise will be updated text from prev binding
+        context.coordinator.parent = self
+        let str = context.coordinator.bufferText ?? text
+        if textArea.string != str || textArea.curHighlightedText != highlightedText || textArea.font != font {
             textArea.curHighlightedText = highlightedText
-            textArea.string = text
+            textArea.string = str
 
-            let attributedStr = NSMutableAttributedString(string: text)
+            let attributedStr = NSMutableAttributedString(string: str)
 
-            attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: text.count))
+            attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: str.count))
 
             let style = getStyle()
 
-            attributedStr.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: NSRange(location: 0, length: text.count))
+            attributedStr.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: NSRange(location: 0, length: str.count))
 
             textArea.defaultParagraphStyle = style
 
             if !highlightedText.isEmpty {
-                let ranges = text.ranges(of: highlightedText, options: .caseInsensitive)
+                let ranges = str.ranges(of: highlightedText, options: .caseInsensitive)
                 for r in ranges {
                     attributedStr.addAttribute(NSAttributedString.Key.backgroundColor, value: Colors.textHighlightBG, range: NSRange(r, in: highlightedText))
                 }
@@ -359,6 +463,7 @@ struct TextArea: NSViewRepresentable {
 
     class Coordinator: NSObject, NSTextViewDelegate {
         var parent: TextArea
+        var bufferText: String?
 
         init(_ textArea: TextArea) {
             parent = textArea
@@ -370,8 +475,9 @@ struct TextArea: NSViewRepresentable {
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
-            
+
             if parent.action != nil {
+                bufferText = textView.string
                 parent.action?(textView.string)
             } else {
                 parent.text = textView.string

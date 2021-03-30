@@ -13,23 +13,7 @@ struct FileListView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center, spacing: -1) {
-                if vm.files.count > 0 {
-                    ForEach(vm.files, id: \.id) { f in
-                        FileListCell(file: f, isSelected: f.uid == vm.selectedFile?.uid)
-                        VSeparatorView(verticalPadding: 5)
-                    }
-                }
-
-                Spacer()
-
-                if let folder = vm.selectedFolder {
-                    SearchInputView(folder: folder)
-                }
-
-            }.frame(height: SizeConstants.appHeaderHeight)
-                .background(Colors.black01.color)
-                .zIndex(1)
+            FileHeaderList()
 
             HSeparatorView()
 
@@ -44,6 +28,64 @@ struct FileListView: View {
             }
         }
         .frame(maxHeight: .infinity)
+    }
+}
+
+struct FileHeaderList: View {
+    @ObservedObject private var vm = FileListVM.shared
+    @State var fileListOffset: CGFloat = 0
+
+    func isNextBtnEnabled(containerWidth: CGFloat, offset: CGFloat) -> Bool {
+        let res = (containerWidth - offset - (CGFloat(vm.files.count) * SizeConstants.fileListWidth) - SizeConstants.searchBarWidth)
+        return res < CGFloat(50)
+    }
+
+    func isPrevBtnEnabled(offset: CGFloat) -> Bool {
+        return offset < 0
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            HStack(alignment: .center, spacing: 1) {
+                HStack(alignment: .center, spacing: -1) {
+                    if vm.files.count > 0 {
+                        ForEach(vm.files, id: \.uid) { f in
+                            FileListCell(file: f, isSelected: f.uid == vm.selectedFile?.uid)
+                            VSeparatorView(verticalPadding: 5)
+                        }
+                    }
+
+                }.offset(x: fileListOffset)
+                    .frame(width: proxy.size.width - SizeConstants.searchBarWidth - 50, height: SizeConstants.appHeaderHeight, alignment: .leading)
+                    .clipped()
+
+                Spacer().frame(minWidth: 0, maxWidth: .infinity)
+
+                IconButton(name: .prev, size: SizeConstants.fontSize, color: Colors.button.color, width: 25) {
+                    withAnimation {
+                        self.fileListOffset += SizeConstants.fileListWidth
+                    }
+
+                }.background(Colors.selection.color)
+                .opacity(isPrevBtnEnabled(offset: fileListOffset) ? 1 : 0.4)
+                .disabled(!isPrevBtnEnabled(offset: fileListOffset))
+
+                IconButton(name: .next, size: SizeConstants.fontSize, color: Colors.button.color, width: 25) {
+                    withAnimation {
+                        self.fileListOffset -= SizeConstants.fileListWidth
+                    }
+                }.background(Colors.selection.color)
+                    .opacity(isNextBtnEnabled(containerWidth: proxy.size.width, offset: fileListOffset) ? 1 : 0.4)
+                    .disabled(!isNextBtnEnabled(containerWidth: proxy.size.width, offset: fileListOffset))
+
+                if let folder = vm.selectedFolder {
+                    SearchInputView(folder: folder)
+                }
+
+            }.frame(width: proxy.size.width, height: SizeConstants.appHeaderHeight, alignment: .leading)
+                .background(Colors.black01.color)
+                .zIndex(1)
+        }.frame(height: SizeConstants.appHeaderHeight, alignment: .leading)
     }
 }
 
@@ -77,8 +119,6 @@ struct FileListCell: View {
 
             if isSelected {
                 FileMenuButton(file: file)
-            } else {
-                Spacer()
             }
         }
         .background(isSelected ? Colors.selection.color : Colors.clear.color)
@@ -161,7 +201,6 @@ struct FileMenuButton: View {
 }
 
 struct SearchInputView: View {
-    @ObservedObject private var vm = FileListVM.shared
     @ObservedObject private var folder: Folder
 
     init(folder: Folder) {
@@ -178,7 +217,7 @@ struct SearchInputView: View {
                 folder.search = value
             }
             .frame(height: SizeConstants.appHeaderHeight)
-            .frame(maxWidth: SizeConstants.searchBarWidth)
+            .frame(maxWidth: SizeConstants.searchBarWidth - 40)
 
             if folder.search.count > 0 {
                 IconButton(name: .close, size: SizeConstants.iconSize, color: folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color, width: SizeConstants.iconSize + 10, height: SizeConstants.iconSize + 10) {
@@ -186,7 +225,7 @@ struct SearchInputView: View {
                 }
             }
         }
-        .frame(width: SizeConstants.searchBarWidth, height: SizeConstants.appHeaderHeight)
+        .frame(width: SizeConstants.searchBarWidth, height: SizeConstants.appHeaderHeight, alignment: .leading)
         .foregroundColor(folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color)
         .background(Colors.black01.color)
     }

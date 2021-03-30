@@ -411,6 +411,8 @@
 			dependencies = (
 			);
 			name = BrainCache;
+			packageProductDependencies = (
+			);
 			productName = BrainCache;
 			productReference = 5B3E16A62605F28100D2CECC /* BrainCache.app */;
 			productType = "com.apple.product-type.application";
@@ -438,6 +440,8 @@
 				Base,
 			);
 			mainGroup = 5B3E169D2605F28100D2CECC;
+			packageReferences = (
+			);
 			productRefGroup = 5B3E16A72605F28100D2CECC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";

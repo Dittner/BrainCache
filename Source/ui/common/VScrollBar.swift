@@ -14,26 +14,27 @@ class VScrollBarController: ObservableObject {
     @Published private(set) var windowHeight: CGFloat = CGFloat.zero
     @Published var scrollPosition = CGFloat.zero
     @Published var scaleY: CGFloat = 1
-    var contentUID: UID
-    static var scrollPositionCache: [UID: CGFloat] = [:]
+    private var contentUID: UID
+    private static var scrollPositionCache: [UID: CGFloat] = [:]
 
     let scrollerWidth: CGFloat = 15
     let scrollFactor: CGFloat = 15
-    let debugInfo = true
+    private var blockScrolling = true
+    private let debugInfo = false
 
     init(contentUID: UID) {
         if debugInfo { logInfo(msg: "[VScrollBarController], contentUID = \(contentUID): init") }
         self.contentUID = contentUID
 
-        if let cachedPosition = VScrollBarController.scrollPositionCache[contentUID] {
-            DispatchQueue.main.asyncAfter(deadline: .now() + DispatchTimeInterval.milliseconds(100)) { [weak self] in
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    self?.scrollPosition = cachedPosition
-                }
-            }
+        let cachedPosition = VScrollBarController.scrollPositionCache[contentUID] ?? 0
+        scrollPosition = cachedPosition
+        if debugInfo { logInfo(msg: "[VScrollBarController], contentUID = \(self.contentUID): set up cached scrollPos = \(cachedPosition)") }
 
-            if debugInfo { logInfo(msg: "[VScrollBarController], new contentUID = \(contentUID): update, read pos = \(cachedPosition)") }
+        DispatchQueue.main.asyncAfter(deadline: .now() + DispatchTimeInterval.milliseconds(100)) { [weak self] in
+            self?.blockScrolling = false
         }
+
+        if debugInfo { logInfo(msg: "[VScrollBarController], new contentUID = \(contentUID): update, read pos = \(cachedPosition)") }
 
         NotificationCenter.default.addObserver(self, selector: #selector(onDidWheelScroll(_:)), name: .didWheelScroll, object: nil)
     }
@@ -58,20 +59,23 @@ class VScrollBarController: ObservableObject {
             scaleY = contentHeight > 0 ? min(1, windowHeight / contentHeight) : 1
 
             if abs(difference) > 0 && abs(difference) < 50 {
-                updateScrollPosition(with: difference)
+                Async.after(milliseconds: 50) {
+                    self.updateScrollPosition(with: difference)
+                }
             }
 
             if debugInfo { logInfo(msg: "[VScrollBarController], contentUID = \(contentUID): contentHeight = \(contentHeight)") }
 
             if contentHeight < windowHeight {
-                scrollPosition = CGFloat.zero
+                updateScrollPosition(with: 0)
             }
         }
     }
 
     func updateScrollPosition(with offset: CGFloat) {
-        
-        
+        guard !blockScrolling else { return }
+
+        if debugInfo { logInfo(msg: "[VScrollBarController], contentUID = \(contentUID): updating scroll position, before = \(scrollPosition)") }
         withAnimation(.easeInOut(duration: 0.2)) {
             let maxScrollOffset = windowHeight - contentHeight
             if maxScrollOffset > 0 {
@@ -84,7 +88,8 @@ class VScrollBarController: ObservableObject {
                 scrollPosition += offset
             }
         }
-        
+
+        if debugInfo { logInfo(msg: "[VScrollBarController], contentUID = \(contentUID): updating scroll position, after = \(scrollPosition)") }
         VScrollBarController.scrollPositionCache[contentUID] = scrollPosition
     }
 

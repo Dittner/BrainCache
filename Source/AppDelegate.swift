@@ -9,7 +9,7 @@ import Cocoa
 import SwiftUI
 
 @main
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     var window: NSWindow!
 
     func applicationWillFinishLaunching(_ notification: Notification) {
@@ -33,10 +33,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.setFrameAutosaveName("Main Window")
         window.contentView = AppHostingView(rootView: app)
         window.makeKeyAndOrderFront(nil)
+        window.delegate = self
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
+    }
+    
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        NSApplication.shared.hide(nil)
+        return false
     }
 
     // Menu Edit
