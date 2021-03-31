@@ -14,13 +14,15 @@ class FileListVM: ObservableObject {
     @Published var files: [File] = []
     @Published var selectedFolder: Folder?
     @Published var selectedFile: File?
-
+    
+    private(set) var fileToFolderDragProcessor: FileToFolderDragProcessor
     private var disposeBag: Set<AnyCancellable> = []
     private let context: BrainCacheContext
 
     init() {
         logInfo(msg: "FileListVM init")
         context = BrainCacheContext.shared
+        fileToFolderDragProcessor = FolderListVM.shared.fileToFolderDragProcessor
 
         FolderListVM.shared.$selectedFolder
             .assign(to: \.selectedFolder, on: self)
@@ -29,10 +31,21 @@ class FileListVM: ObservableObject {
         Publishers.CombineLatest($selectedFolder.compactMap { $0 }, context.filesRepo.subject)
             .debounce(for: 0.2, scheduler: RunLoop.main)
             .sink { folder, allFiles in
-                self.files = allFiles.filter { $0.folderUID == folder.uid }.sorted(by: { $0.title < $1.title })
-                logInfo(msg: "FileListVM received files: \(self.files.count)")
-                self.setupLastOpenedFile()
+                self.updateFolderFiles(folder: folder, allFiles: allFiles)
             }.store(in: &disposeBag)
+        
+        context.dispatcher.subject
+            .sink { event in
+                switch event {
+                case let .filesFolderChanged(file):
+                    if let folder = self.selectedFolder, self.files.firstIndex(of: file) != nil {
+                        self.updateFolderFiles(folder: folder, allFiles: self.context.filesRepo.subject.value)
+                    }
+                default:
+                    break
+                }
+            }
+            .store(in: &disposeBag)
 
         $selectedFile
             .sink { file in
@@ -48,11 +61,17 @@ class FileListVM: ObservableObject {
                     self.deleteFile()
                 case let .monoFontSelected(value):
                     if let file = self.selectedFile {
-                        file.useMonoFont = value
+                        file.updateFont(useMonoFont: value)
                     }
                 default: break
                 }
             }.store(in: &disposeBag)
+    }
+    
+    private func updateFolderFiles(folder:Folder, allFiles:[File]){
+        files = allFiles.filter { $0.folderUID == folder.uid }.sorted(by: { $0.title < $1.title })
+        logInfo(msg: "FileListVM received files: \(self.files.count)")
+        setupLastOpenedFile()
     }
 
     private func setupLastOpenedFile() {

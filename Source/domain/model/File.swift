@@ -13,10 +13,9 @@ protocol FileBody {
 }
 
 class File: DomainEntity, ObservableObject {
-    let folderUID: UID
-
-    @Published var title: String
-    @Published var useMonoFont: Bool
+    @Published private(set) var title: String
+    @Published private(set) var useMonoFont: Bool
+    @Published private(set) var folderUID: UID
     let body: FileBody
 
     private var disposeBag: Set<AnyCancellable> = []
@@ -32,25 +31,27 @@ class File: DomainEntity, ObservableObject {
                 self.dispatcher.notify(.entityStateChanged(entity: self))
             }
             .store(in: &disposeBag)
-
-        notifyStateChanged()
     }
 
-    private func notifyStateChanged() {
-        $title
-            .removeDuplicates()
-            .dropFirst()
-            .sink { _ in
-                self.dispatcher.notify(.entityStateChanged(entity: self))
-            }
-            .store(in: &disposeBag)
+    func updateFolderUID(uid: UID) {
+        if folderUID != uid {
+            folderUID = uid
+            dispatcher.notify(.entityStateChanged(entity: self))
+            dispatcher.notify(.filesFolderChanged(file: self))
+        }
+    }
 
-        $useMonoFont
-            .removeDuplicates()
-            .dropFirst()
-            .sink { _ in
-                self.dispatcher.notify(.entityStateChanged(entity: self))
-            }
-            .store(in: &disposeBag)
+    func updateFont(useMonoFont: Bool) {
+        if self.useMonoFont != useMonoFont {
+            self.useMonoFont = useMonoFont
+            dispatcher.notify(.entityStateChanged(entity: self))
+        }
+    }
+
+    func updateTitle(title: String) {
+        if self.title != title {
+            self.title = title
+            dispatcher.notify(.entityStateChanged(entity: self))
+        }
     }
 }

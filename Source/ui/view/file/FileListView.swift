@@ -13,7 +13,7 @@ struct FileListView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            FileHeaderList()
+            FileHeaderList(dragProcessor: vm.fileToFolderDragProcessor)
 
             HSeparatorView()
 
@@ -33,6 +33,7 @@ struct FileListView: View {
 
 struct FileHeaderList: View {
     @ObservedObject private var vm = FileListVM.shared
+    @ObservedObject var dragProcessor: FileToFolderDragProcessor
     @State var fileListOffset: CGFloat = 0
 
     func isNextBtnEnabled(containerWidth: CGFloat, offset: CGFloat) -> Bool {
@@ -51,6 +52,7 @@ struct FileHeaderList: View {
                     if vm.files.count > 0 {
                         ForEach(vm.files, id: \.uid) { f in
                             FileListCell(file: f, isSelected: f.uid == vm.selectedFile?.uid)
+                                .onDrag { self.dragProcessor.draggingFile = f; return NSItemProvider(object: NSString()) }
                             VSeparatorView(verticalPadding: 5)
                         }
                     }
@@ -67,8 +69,8 @@ struct FileHeaderList: View {
                     }
 
                 }.background(Colors.selection.color)
-                .opacity(isPrevBtnEnabled(offset: fileListOffset) ? 1 : 0.4)
-                .disabled(!isPrevBtnEnabled(offset: fileListOffset))
+                    .opacity(isPrevBtnEnabled(offset: fileListOffset) ? 1 : 0.4)
+                    .disabled(!isPrevBtnEnabled(offset: fileListOffset))
 
                 IconButton(name: .next, size: SizeConstants.fontSize, color: Colors.button.color, width: 25) {
                     withAnimation {
@@ -112,7 +114,7 @@ struct FileListCell: View {
                 .padding(.leading, SizeConstants.padding)
 
             EditableText(file.title, uid: file.uid) { value in
-                file.title = value
+                file.updateTitle(title: value)
             }
             .frame(height: SizeConstants.listCellHeight)
             .frame(width: SizeConstants.fileListWidth - 45)
@@ -162,7 +164,7 @@ struct FileMenuButton: View {
                 if let tableBody = file.body as? TableFileBody {
                     Button("Add Row") { tableBody.addNewRow() }
                     Button("Add Column") { tableBody.addNewColumn() }
-                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.useMonoFont.toggle() }
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.updateFont(useMonoFont: !file.useMonoFont) }
                     MenuButton("Delete ...") {
                         if tableBody.headers.count > 1 {
                             ForEach(tableBody.headers.enumeratedArray(), id: \.offset) { index, header in
@@ -177,7 +179,7 @@ struct FileMenuButton: View {
 
                 } else if let listBody = file.body as? ListFileBody {
                     Button("Add Column") { listBody.addNewColumn() }
-                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.useMonoFont.toggle() }
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.updateFont(useMonoFont: !file.useMonoFont) }
                     MenuButton("Delete ...") {
                         if listBody.columns.count > 1 {
                             ForEach(listBody.columns.enumeratedArray(), id: \.offset) { index, column in
@@ -191,7 +193,7 @@ struct FileMenuButton: View {
                     }
 
                 } else {
-                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.useMonoFont.toggle() }
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.updateFont(useMonoFont: !file.useMonoFont) }
                     Button("Delete File") { vm.deleteFile() }
                 }
             })

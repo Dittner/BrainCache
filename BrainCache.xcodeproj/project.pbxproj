@@ -14,6 +14,7 @@
 		5B288A992607595900CF175F /* Inputs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B288A982607595900CF175F /* Inputs.swift */; };
 		5B288A9F2607743C00CF175F /* Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B288A9E2607743C00CF175F /* Cache.swift */; };
 		5B28909A26122F97005F90D6 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B28909926122F97005F90D6 /* Async.swift */; };
+		5B3B77722614A9090003DAD5 /* FileToFolderDragProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3B77712614A9090003DAD5 /* FileToFolderDragProcessor.swift */; };
 		5B3E16AA2605F28100D2CECC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3E16A92605F28100D2CECC /* AppDelegate.swift */; };
 		5B3E16AE2605F28100D2CECC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B3E16AD2605F28100D2CECC /* Assets.xcassets */; };
 		5B3E16B12605F28100D2CECC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B3E16B02605F28100D2CECC /* Preview Assets.xcassets */; };
@@ -81,6 +82,7 @@
 		5B288A982607595900CF175F /* Inputs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inputs.swift; sourceTree = "<group>"; };
 		5B288A9E2607743C00CF175F /* Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cache.swift; sourceTree = "<group>"; };
 		5B28909926122F97005F90D6 /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
+		5B3B77712614A9090003DAD5 /* FileToFolderDragProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileToFolderDragProcessor.swift; sourceTree = "<group>"; };
 		5B3E16A62605F28100D2CECC /* BrainCache.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BrainCache.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B3E16A92605F28100D2CECC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5B3E16AB2605F28100D2CECC /* BrainCacheApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrainCacheApp.swift; sourceTree = "<group>"; };
@@ -347,6 +349,7 @@
 		5B3E172D2606487100D2CECC /* folder */ = {
 			isa = PBXGroup;
 			children = (
+				5B3B77712614A9090003DAD5 /* FileToFolderDragProcessor.swift */,
 				5B3E173126064A5B00D2CECC /* FolderListView.swift */,
 				5B3E172E2606489000D2CECC /* FolderListVM.swift */,
 			);
@@ -522,6 +525,7 @@
 				5B288A992607595900CF175F /* Inputs.swift in Sources */,
 				5B75DFDD2610B513001013FF /* ListController.swift in Sources */,
 				5B288A8526073C4100CF175F /* NSTextField++.swift in Sources */,
+				5B3B77722614A9090003DAD5 /* FileToFolderDragProcessor.swift in Sources */,
 				5B5AF62326096A6C00387272 /* MenuAPI.swift in Sources */,
 				5BE6D032260DF6FE000D0AA9 /* VScrollBar.swift in Sources */,
 				5B3E17652606A79900D2CECC /* HSeparatorView.swift in Sources */,

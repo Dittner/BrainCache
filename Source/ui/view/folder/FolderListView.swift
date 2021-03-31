@@ -44,6 +44,7 @@ enum FolderAction {
 
 struct FolderListCell: View {
     @ObservedObject private var folder: Folder
+    @ObservedObject private var dragProcessor: FileToFolderDragProcessor
     let vm = FolderListVM.shared
     let didSelectAction: () -> Void
     private let isSelected: Bool
@@ -53,6 +54,7 @@ struct FolderListCell: View {
         self.folder = folder
         self.isSelected = isSelected
         self.didSelectAction = didSelectAction
+        dragProcessor = vm.fileToFolderDragProcessor
     }
 
     var body: some View {
@@ -77,18 +79,17 @@ struct FolderListCell: View {
                                 Button("\(columnsNum) columns") { vm.createListFile(with: columnsNum) }
                             }
                         }.menuButtonStyle(BorderlessButtonMenuButtonStyle())
-                        
+
                         Colors.clear.color
                             .frame(height: 0.1)
                             .frame(maxWidth: .infinity)
-                        
+
                         MenuButton("New Table ...") {
                             Button("1 column") { vm.createTableFile(with: 1) }
                             ForEach(2 ... 10, id: \.self) { columnsNum in
                                 Button("\(columnsNum) columns") { vm.createTableFile(with: columnsNum) }
                             }
                         }.menuButtonStyle(BorderlessButtonMenuButtonStyle())
-                        
 
                         Button("Delete Folder") { vm.deleteFolder() }
 
@@ -102,6 +103,8 @@ struct FolderListCell: View {
         .padding(.horizontal, SizeConstants.padding)
         .foregroundColor(isSelected ? Colors.textLight.color : Colors.textDark.color)
         .frame(width: SizeConstants.folderListWidth, height: SizeConstants.listCellHeight)
+        .onDrop(of: ["public.plain-text"], delegate: FileToFolderDropViewDelegate(destFolder: folder, dragProcessor: dragProcessor))
+        .border(dragProcessor.dropCandidate?.uid == folder.uid ? Colors.focusColor.color : Colors.clear.color)
 
         .if(!isSelected) {
             $0.highPriorityGesture(

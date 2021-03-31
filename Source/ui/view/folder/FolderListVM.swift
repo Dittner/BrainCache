@@ -14,12 +14,14 @@ class FolderListVM: ObservableObject {
     @Published var folders: [Folder] = []
     @Published var selectedFolder: Folder?
 
+    private(set) var fileToFolderDragProcessor: FileToFolderDragProcessor
     private var disposeBag: Set<AnyCancellable> = []
     private let context: BrainCacheContext
 
     init() {
         logInfo(msg: "FolderListVM init")
         context = BrainCacheContext.shared
+        fileToFolderDragProcessor = FileToFolderDragProcessor()
 
         context.foldersRepo.subject
             .debounce(for: 0.2, scheduler: RunLoop.main)

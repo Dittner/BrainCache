@@ -455,9 +455,14 @@ struct TextArea: NSViewRepresentable {
             textArea.textColor = textColor
         }
 
+        updateHeight(textArea)
+    }
+    
+    func updateHeight(_ textArea: CustomNSTextView) {
         textArea.textContainer?.containerSize.width = width
-        if height != textArea.contentSize.height {
-            height = textArea.contentSize.height
+        let updatedHeight = textArea.contentSize.height
+        if height != updatedHeight {
+            height = updatedHeight
         }
     }
 
@@ -474,11 +479,12 @@ struct TextArea: NSViewRepresentable {
         }
 
         func textDidChange(_ notification: Notification) {
-            guard let textView = notification.object as? NSTextView else { return }
+            guard let textView = notification.object as? CustomNSTextView else { return }
 
             if parent.action != nil {
                 bufferText = textView.string
                 parent.action?(textView.string)
+                parent.updateHeight(textView)
             } else {
                 parent.text = textView.string
             }
