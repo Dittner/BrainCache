@@ -321,9 +321,9 @@ struct EditableMultilineText: View {
             VStack(alignment: .trailing, spacing: 2) {
                 TextArea(text: $textManager.editingText, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight)
                     .colorScheme(.dark)
-                    .offset(x: -4)
+                    .offset(x: -5)
                     .padding(.horizontal, SizeConstants.padding)
-                    .frame(height: max(SizeConstants.listCellHeight, notifier.height))
+                    .frame(height: max(SizeConstants.listCellHeight - 1, notifier.height - 1))
                     .border(Colors.focusColor.color)
 
                 HStack(alignment: .center, spacing: 2) {
@@ -345,7 +345,7 @@ struct EditableMultilineText: View {
                 .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
                 .padding(.vertical, 5)
                 .padding(.horizontal, SizeConstants.padding)
-                .frame(maxHeight: .infinity, alignment: alignment)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
                 .lineLimit(nil)
                 .lineSpacing(5)
                 .fixedSize(horizontal: false, vertical: true)
@@ -415,6 +415,7 @@ struct TextArea: NSViewRepresentable {
         style.alignment = .left
         style.firstLineHeadIndent = 0
         style.lineBreakMode = .byWordWrapping
+        style.lineSpacing = 0
 
         if let lineHeight = lineHeight {
             style.minimumLineHeight = lineHeight

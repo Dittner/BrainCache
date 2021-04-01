@@ -229,6 +229,5 @@ struct SearchInputView: View {
         }
         .frame(width: SizeConstants.searchBarWidth, height: SizeConstants.appHeaderHeight, alignment: .leading)
         .foregroundColor(folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color)
-        .background(Colors.black01.color)
     }
 }

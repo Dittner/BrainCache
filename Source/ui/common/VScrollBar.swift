@@ -77,15 +77,20 @@ class VScrollBarController: ObservableObject {
 
         if debugInfo { logInfo(msg: "[VScrollBarController], contentUID = \(contentUID): updating scroll position, before = \(scrollPosition)") }
         withAnimation(.easeInOut(duration: 0.2)) {
+            var position: CGFloat = 0
             let maxScrollOffset = windowHeight - contentHeight
             if maxScrollOffset > 0 {
-                scrollPosition = CGFloat.zero
+                position = CGFloat.zero
             } else if scrollPosition + offset > 0 {
-                scrollPosition = CGFloat.zero
+                position = CGFloat.zero
             } else if scrollPosition + offset < maxScrollOffset {
-                scrollPosition = maxScrollOffset
+                position = maxScrollOffset
             } else {
-                scrollPosition += offset
+                position = scrollPosition + offset
+            }
+
+            if scrollPosition != position {
+                scrollPosition = position
             }
         }
 
@@ -137,6 +142,11 @@ struct VScrollBar<Content>: View where Content: View {
 
     init(uid: UID, @ViewBuilder content: () -> Content) {
         controller = VScrollBarController(contentUID: uid)
+        self.content = content()
+    }
+
+    init(uid: UID, controller: VScrollBarController, @ViewBuilder content: () -> Content) {
+        self.controller = controller
         self.content = content()
     }
 

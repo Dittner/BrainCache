@@ -35,8 +35,12 @@ struct ListFileView: View {
                             .frame(width: column.ratio * (proxy.size.width - scrollerWidth))
                     }
                 }
+                .frame(maxHeight: .infinity, alignment: .topLeading)
+                .if(file.useMonoFont) {
+                    $0.background(ListFileBG())
+                }
             }
-            .padding(.top, headerHeight)
+            .offset(y: headerHeight)
             .frame(width: proxy.size.width, height: proxy.size.height - headerHeight)
 
             HSeparatorView()
@@ -47,6 +51,27 @@ struct ListFileView: View {
 
             ListLinesView(lc)
                 .frame(width: proxy.size.width - scrollerWidth)
+        }
+    }
+}
+
+struct ListFileBG: View {
+    private let lineRowHeight: CGFloat = SizeConstants.fontLineHeight
+
+    func getYOffset(scrollPos: CGFloat) -> CGFloat {
+        return CGFloat(Double(scrollPos).remainder(dividingBy: Double(lineRowHeight)))
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            VStack(alignment: .leading, spacing: lineRowHeight) {
+                ForEach(1 ... Int(proxy.size.height / lineRowHeight) + 2, id: \.self) { row in
+                    if row % 2 == 0 {
+                        Colors.black01.color.frame(width: proxy.size.width, height: lineRowHeight)
+                    }
+                }
+            }.allowsHitTesting(false)
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)
         }
     }
 }
@@ -106,7 +131,7 @@ struct ListColumnCell: View {
             self.lc.updateColumn(column, text: text)
         }
         .colorScheme(.dark)
-        .offset(x: -4)
+        .offset(x: -4, y: -2)
         .padding(.horizontal, SizeConstants.padding)
         .frame(height: max(minHeight - 5, notifier.height))
     }

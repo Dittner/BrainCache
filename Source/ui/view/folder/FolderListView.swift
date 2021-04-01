@@ -63,7 +63,7 @@ struct FolderListCell: View {
                 .allowsHitTesting(false)
 
             EditableText(folder.title, uid: folder.uid, countClickActivation: 2) { value in
-                folder.title = value
+                vm.updateFolder(folder, title: value)
             }
             .frame(width: SizeConstants.folderListWidth - 50, height: SizeConstants.listCellHeight)
 

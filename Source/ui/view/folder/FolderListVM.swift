@@ -110,7 +110,12 @@ class FolderListVM: ObservableObject {
             Cache.write(key: .lastOpenedFolderUID, value: f.uid)
         }
     }
-
+    
+    func updateFolder(_ f:Folder, title:String) {
+        f.title = title
+        self.folders = folders.sorted(by: { $0.title < $1.title })
+    }
+    
     func deselectFolder() {
         selectedFolder = nil
     }

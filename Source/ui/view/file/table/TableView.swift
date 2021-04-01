@@ -52,6 +52,7 @@ struct TableFileView: View {
                                 EditableMultilineText(cell.text, uid: cell.uid, alignment: .leading, width: getCellWidth(header: fileBody.headers[index], rootWidth: root.size.width), useMonoFont: file.useMonoFont) { value in
                                     self.tc.updateCell(cell, text: value)
                                 }
+                                .offset(x: 1, y: 1)
                                 .foregroundColor(Colors.text.color)
                                 .frame(width: getCellWidth(header: fileBody.headers[index], rootWidth: root.size.width))
                             }
