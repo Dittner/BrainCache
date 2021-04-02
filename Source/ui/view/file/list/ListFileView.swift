@@ -97,7 +97,7 @@ struct ListHeaderView: View {
                     }
                     .foregroundColor(Colors.textDark.color)
                     .frame(width: column.ratio * geometry.size.width, height: SizeConstants.listCellHeight)
-                    .border(dragProcessor.dropCandidate?.uid == column.uid ? Colors.focusColor.color : Colors.clear.color)
+                    .border(dragProcessor.dropCandidate?.uid == column.uid ? Colors.focus.color : Colors.clear.color)
                     .onDrag { self.dragProcessor.draggingColumn = column; return NSItemProvider(object: NSString()) }
                     .onDrop(of: ["public.plain-text"], delegate: ListColumnDropViewDelegate(destColumn: column, dragProcessor: dragProcessor))
                 }

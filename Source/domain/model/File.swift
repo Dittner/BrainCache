@@ -8,8 +8,38 @@
 import Combine
 import SwiftUI
 
+class PendingPassthroughSubject<Output, Failure: Error>: Subject {
+    init() {
+        wrapped = .init()
+    }
+
+    func send(_ value: Output) {
+        Async.after(milliseconds: 10) { [weak self] in
+            self?.wrapped.send(value)
+        }
+    }
+
+    func send(completion: Subscribers.Completion<Failure>) {
+        Async.after(milliseconds: 10) { [weak self] in
+            self?.wrapped.send(completion: completion)
+        }
+    }
+
+    func send(subscription: Subscription) {
+        Async.after(milliseconds: 10) { [weak self] in
+            self?.wrapped.send(subscription: subscription)
+        }
+    }
+
+    func receive<Downstream: Subscriber>(subscriber: Downstream) where Failure == Downstream.Failure, Output == Downstream.Input {
+        wrapped.subscribe(subscriber)
+    }
+
+    private let wrapped: PassthroughSubject<Output, Failure>
+}
+
 protocol FileBody {
-    var stateDidChange: PassthroughSubject<DomainEntityStateDidChangeEvent, Never> { get }
+    var stateDidChange: PendingPassthroughSubject<DomainEntityStateDidChangeEvent, Never> { get }
 }
 
 class File: DomainEntity, ObservableObject {

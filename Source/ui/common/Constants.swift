@@ -23,7 +23,7 @@ public struct Colors {
     
     static let textHighlight = NSColor(rgb: 0x333333)
     static let textHighlightBG = NSColor(rgb: 0x6956bc)
-    static let focusColor = NSColor(rgb: 0x6baffd)
+    static let focus = NSColor(rgb: 0x6baffd)
     static let button = NSColor(rgb: 0xa29cbd)
 }
 

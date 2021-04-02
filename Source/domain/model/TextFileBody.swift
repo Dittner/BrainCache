@@ -11,7 +11,7 @@ import SwiftUI
 class TextFileBody: FileBody, ObservableObject {
     @Published var text: String
 
-    var stateDidChange = PassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
+    var stateDidChange = PendingPassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
 
     private var disposeBag: Set<AnyCancellable> = []
     init(text: String) {

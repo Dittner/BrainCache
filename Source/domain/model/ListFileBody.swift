@@ -9,7 +9,7 @@ import Combine
 import SwiftUI
 
 class ListFileBody: FileBody {
-    var stateDidChange = PassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
+    var stateDidChange = PendingPassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
 
     private(set) var columns: [ListColumn]
 

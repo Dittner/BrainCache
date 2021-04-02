@@ -104,7 +104,7 @@ struct FolderListCell: View {
         .foregroundColor(isSelected ? Colors.textLight.color : Colors.textDark.color)
         .frame(width: SizeConstants.folderListWidth, height: SizeConstants.listCellHeight)
         .onDrop(of: ["public.plain-text"], delegate: FileToFolderDropViewDelegate(destFolder: folder, dragProcessor: dragProcessor))
-        .border(dragProcessor.dropCandidate?.uid == folder.uid ? Colors.focusColor.color : Colors.clear.color)
+        .border(dragProcessor.dropCandidate?.uid == folder.uid ? Colors.focus.color : Colors.clear.color)
 
         .if(!isSelected) {
             $0.highPriorityGesture(

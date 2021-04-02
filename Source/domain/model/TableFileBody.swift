@@ -9,7 +9,7 @@ import Combine
 import SwiftUI
 
 class TableFileBody: FileBody, ObservableObject {
-    var stateDidChange = PassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
+    var stateDidChange = PendingPassthroughSubject<DomainEntityStateDidChangeEvent, Never>()
 
     private(set) var headers: [TableHeader]
     private(set) var rows: [TableRow]

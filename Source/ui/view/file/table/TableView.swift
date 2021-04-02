@@ -118,7 +118,7 @@ struct TableHeaderView: View {
                     .onDrop(of: ["public.plain-text"], delegate: TableHeaderDropViewDelegate(destHeader: header, dragProcessor: dragProcessor))
                     .foregroundColor(tc.table.sortByHeaderIndex == index ? Colors.textLight.color : Colors.textDark.color)
                     .frame(width: header.ratio * geometry.size.width, height: SizeConstants.listCellHeight)
-                    .border(dragProcessor.dropCandidate?.uid == header.uid ? Colors.focusColor.color : Colors.clear.color)
+                    .border(dragProcessor.dropCandidate?.uid == header.uid ? Colors.focus.color : Colors.clear.color)
                     .if(tc.table.sortByHeaderIndex != index) {
                         $0.highPriorityGesture(
                             TapGesture()
