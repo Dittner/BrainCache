@@ -14,6 +14,7 @@ class BrainCacheContext: ObservableObject {
     static var shared = BrainCacheContext()
 
     let dispatcher: DomainEventDispatcher
+    let repoModelVer: UInt = 2
     let foldersRepo: JSONRepository<Folder>
     let filesRepo: JSONRepository<File>
     let menuAPI: MenuAPI
@@ -29,25 +30,25 @@ class BrainCacheContext: ObservableObject {
         FileSystemAPI.shared = FileSystemAPI(documentsURL: hasDropboxProjectDir ? dropboxUrl : documentsURL)
 
         Logger.run()
-        BrainCacheContext.logAbout()
+        BrainCacheContext.logAbout(repoModelVer)
         logInfo(msg: "BrainCacheContext init")
 
         dispatcher = DomainEventDispatcher()
         menuAPI = MenuAPI()
         entityRemover = DomainEntityRemover()
 
-        let folderSerializer = FolderSerializer_v1(dispatcher: dispatcher)
-        foldersRepo = JSONRepository<Folder>(repoID: .folder, dispatcher: dispatcher, storeTo: FileSystemAPI.shared.getUrl(of: .folders), serialize: folderSerializer.serialize, deserialize: folderSerializer.deserialize)
-
-        let fileSerializer = FileSerializer_v1(dispatcher: dispatcher)
-        filesRepo = JSONRepository<File>(repoID: .file, dispatcher: dispatcher, storeTo: FileSystemAPI.shared.getUrl(of: .files), serialize: fileSerializer.serialize, deserialize: fileSerializer.deserialize)
+        let repoManager = RepoManager(actualVersion: repoModelVer, dispatcher: dispatcher)
+        repoManager.migrateIfNecessary()
+        foldersRepo = repoManager.getActualFolderRepo()
+        filesRepo = repoManager.getActualFileRepo()
     }
 
-    static func logAbout() {
+    static func logAbout(_ repoModelVer: UInt) {
         var aboutLog: String = "BrainCache Logs\n"
         let ver: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
         let build: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
         aboutLog += "v." + ver + "." + build + "\n"
+        aboutLog += "repo model v.\(repoModelVer)\n"
 
         #if DEBUG
             aboutLog += "debug mode\n"

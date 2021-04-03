@@ -26,27 +26,42 @@ class FileSystemAPI {
         projectURL = documentsURL.appendingPathComponent(StorageDirectory.project.rawValue)
     }
 
-    func getUrl(of dir: StorageDirectory) -> URL {
-        return projectURL.appendingPathComponent(dir.rawValue)
+    func getLogsUrl() -> URL {
+        return projectURL.appendingPathComponent(StorageDirectory.logs.rawValue)
     }
 
-    func existDir(_ dir: StorageDirectory) -> Bool {
-        let dirPath = dir.rawValue
-        var isDir: ObjCBool = true
-        return FileManager.default.fileExists(atPath: projectURL.appendingPathComponent(dirPath).path, isDirectory: &isDir)
+    func getFilesUrl(ver: UInt) -> URL {
+        return projectURL.appendingPathComponent("v\(ver)/\(StorageDirectory.files.rawValue)")
     }
 
-    func createDir(_ dir: StorageDirectory) throws {
-        let dirPath = dir.rawValue
-        try FileManager.default.createDirectory(atPath: projectURL.appendingPathComponent(dirPath).path, withIntermediateDirectories: true, attributes: nil)
+    func getFoldersUrl(ver: UInt) -> URL {
+        return projectURL.appendingPathComponent("v\(ver)/\(StorageDirectory.folders.rawValue)")
     }
 
-    func getURLs(dir: StorageDirectory, filesWithExtension: String) throws -> [URL] {
-        let dirPath = dir.rawValue
+    func getProjectContentURLs() throws -> [URL] {
+        return try FileManager.default.contentsOfDirectory(at: projectURL, includingPropertiesForKeys: nil)
+    }
+    
+    func getLogsContentURLs(filesWithExtension: String) throws -> [URL] {
+        let dirPath = StorageDirectory.logs.rawValue
         return try FileManager.default.contentsOfDirectory(at: projectURL.appendingPathComponent(dirPath), includingPropertiesForKeys: nil).filter { $0.pathExtension == filesWithExtension }
     }
 
-    func deleteFile(from url: URL) throws {
+    func existLogsDir() -> Bool {
+        var isDir: ObjCBool = true
+        return FileManager.default.fileExists(atPath: projectURL.appendingPathComponent(StorageDirectory.logs.rawValue).path, isDirectory: &isDir)
+    }
+
+    func createLogsDir() throws {
+        let dirPath = StorageDirectory.logs.rawValue
+        try FileManager.default.createDirectory(atPath: projectURL.appendingPathComponent(dirPath).path, withIntermediateDirectories: true, attributes: nil)
+    }
+
+    func deleteFileToTrash(from url: URL) throws {
         try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+    }
+    
+    func copyContent(fromDir: URL, toDir:URL) throws {
+        try FileManager.default.copyItem(at: fromDir, to: toDir)
     }
 }

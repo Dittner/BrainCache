@@ -12,11 +12,15 @@ class Folder: DomainEntity, ObservableObject {
     @Published var title: String
     @Published var selectedFileUID: UID?
     @Published var search: String = ""
+    @Published var parentFolderUID: UID?
+    @Published var isOpened: Bool = false
     let searchUID: UID = UID()
 
-    init(uid: UID, title: String, dispatcher: DomainEventDispatcher, selectedFileUID: UID? = nil) {
+    init(uid: UID, title: String, dispatcher: DomainEventDispatcher, selectedFileUID: UID? = nil, parentFolderUID: UID? = nil, isOpened: Bool = false) {
         self.title = title
         self.selectedFileUID = selectedFileUID
+        self.parentFolderUID = parentFolderUID
+        self.isOpened = isOpened
         super.init(uid: uid, dispatcher: dispatcher)
 
         notifyStateChanged()
@@ -33,6 +37,22 @@ class Folder: DomainEntity, ObservableObject {
             .store(in: &disposeBag)
 
         $selectedFileUID
+            .removeDuplicates()
+            .dropFirst()
+            .sink { _ in
+                self.dispatcher.notify(.entityStateChanged(entity: self))
+            }
+            .store(in: &disposeBag)
+        
+        $parentFolderUID
+            .removeDuplicates()
+            .dropFirst()
+            .sink { _ in
+                self.dispatcher.notify(.entityStateChanged(entity: self))
+            }
+            .store(in: &disposeBag)
+        
+        $isOpened
             .removeDuplicates()
             .dropFirst()
             .sink { _ in

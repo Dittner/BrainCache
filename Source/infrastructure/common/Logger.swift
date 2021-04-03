@@ -41,7 +41,7 @@ class Logger {
     }
 
     init() {
-        if !FileSystemAPI.shared.existDir(.logs) { try? FileSystemAPI.shared.createDir(.logs) }
+        if !FileSystemAPI.shared.existLogsDir() { try? FileSystemAPI.shared.createLogsDir() }
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH-mm-ss"
 
@@ -82,7 +82,7 @@ class Logger {
 
     private func removeExpiredLogs() {
         do {
-            let urls = try FileSystemAPI.shared.getURLs(dir: .logs, filesWithExtension: "clientLog")
+            let urls = try FileSystemAPI.shared.getLogsContentURLs(filesWithExtension: "clientLog")
             let curDateTime = Int(Date().timeIntervalSinceReferenceDate)
             let expireTimeInSecs = curDateTime - keepLogsInDays * 24 * 60 * 60
             var countOfExpiredFiles: Int = 0

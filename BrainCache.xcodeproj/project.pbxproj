@@ -60,6 +60,8 @@
 		5B75DFDD2610B513001013FF /* ListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFDC2610B513001013FF /* ListController.swift */; };
 		5B75DFE12610B5C7001013FF /* ListFileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFD72610B450001013FF /* ListFileView.swift */; };
 		5B75DFE32610B5E0001013FF /* TextFileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFD52610B41D001013FF /* TextFileView.swift */; };
+		5B8DCCCD26187A2300611BDE /* RepoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8DCCCC26187A2300611BDE /* RepoManager.swift */; };
+		5B8DCCD12618989900611BDE /* FolderSerializer_v2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8DCCD02618988800611BDE /* FolderSerializer_v2.swift */; };
 		5B928C4E260CEE560039FC14 /* ListFileBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B928C4D260CEE560039FC14 /* ListFileBody.swift */; };
 		5B928C54260CEF230039FC14 /* TextFileBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B928C53260CEF230039FC14 /* TextFileBody.swift */; };
 		5B928C60260D02190039FC14 /* ListFileBodySerializer_v1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B928C5F260D02190039FC14 /* ListFileBodySerializer_v1.swift */; };
@@ -132,6 +134,8 @@
 		5B75DFD72610B450001013FF /* ListFileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFileView.swift; sourceTree = "<group>"; };
 		5B75DFD82610B47E001013FF /* TableController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableController.swift; sourceTree = "<group>"; };
 		5B75DFDC2610B513001013FF /* ListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListController.swift; sourceTree = "<group>"; };
+		5B8DCCCC26187A2300611BDE /* RepoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoManager.swift; sourceTree = "<group>"; };
+		5B8DCCD02618988800611BDE /* FolderSerializer_v2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderSerializer_v2.swift; sourceTree = "<group>"; };
 		5B928C4D260CEE560039FC14 /* ListFileBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFileBody.swift; sourceTree = "<group>"; };
 		5B928C53260CEF230039FC14 /* TextFileBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileBody.swift; sourceTree = "<group>"; };
 		5B928C5F260D02190039FC14 /* ListFileBodySerializer_v1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFileBodySerializer_v1.swift; sourceTree = "<group>"; };
@@ -328,8 +332,10 @@
 		5B3E170A2606191600D2CECC /* repo */ = {
 			isa = PBXGroup;
 			children = (
+				5B8DCCCF2618986F00611BDE /* v2 */,
 				5B3E170C2606198E00D2CECC /* v1 */,
 				5B3E170B2606198B00D2CECC /* JSONRepository.swift */,
+				5B8DCCCC26187A2300611BDE /* RepoManager.swift */,
 			);
 			path = repo;
 			sourceTree = "<group>";
@@ -396,6 +402,14 @@
 				5B75DFDC2610B513001013FF /* ListController.swift */,
 			);
 			path = list;
+			sourceTree = "<group>";
+		};
+		5B8DCCCF2618986F00611BDE /* v2 */ = {
+			isa = PBXGroup;
+			children = (
+				5B8DCCD02618988800611BDE /* FolderSerializer_v2.swift */,
+			);
+			path = v2;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -510,6 +524,7 @@
 				5B3E174826064D8100D2CECC /* View++.swift in Sources */,
 				5B3E1727260643BE00D2CECC /* FolderSerializer_v1.swift in Sources */,
 				5B3E1704260617CD00D2CECC /* DomainEventDispatcher.swift in Sources */,
+				5B8DCCD12618989900611BDE /* FolderSerializer_v2.swift in Sources */,
 				5B288A9F2607743C00CF175F /* Cache.swift in Sources */,
 				5BC12593260A508600918AB3 /* File.swift in Sources */,
 				5BF9ADD8260BEB0E004C6AFC /* TableFileBodySerializer_v1.swift in Sources */,
@@ -530,6 +545,7 @@
 				5BE6D032260DF6FE000D0AA9 /* VScrollBar.swift in Sources */,
 				5B3E17652606A79900D2CECC /* HSeparatorView.swift in Sources */,
 				5B3E16F0260609EA00D2CECC /* Array++.swift in Sources */,
+				5B8DCCCD26187A2300611BDE /* RepoManager.swift in Sources */,
 				5B75DFE32610B5E0001013FF /* TextFileView.swift in Sources */,
 				5B928C60260D02190039FC14 /* ListFileBodySerializer_v1.swift in Sources */,
 				5B75DFD92610B47E001013FF /* TableController.swift in Sources */,

@@ -4,9 +4,41 @@ import Foundation
 import SwiftUI
 
 extension String {
+    /*
+     "x123v456".matches(for: "v[0-9]+") // ["v456"]
+     "x123v456".matches(for: "v([0-9]+)") // ["v456". "456"]
+     */
+
+    func matches(regex: String) -> [[String]] {
+        guard let regex = try? NSRegularExpression(pattern: regex, options: []) else { return [] }
+        let nsString = self as NSString
+        let results = regex.matches(in: self, options: [], range: NSMakeRange(0, nsString.length))
+        return results.map { result in
+            (0 ..< result.numberOfRanges).map {
+                result.range(at: $0).location != NSNotFound
+                    ? nsString.substring(with: result.range(at: $0))
+                    : ""
+            }
+        }
+    }
+
+    func firstMatch(regex: String) -> [String] {
+        guard let regex = try? NSRegularExpression(pattern: regex, options: []) else { return [] }
+        let nsString = self as NSString
+        let results = regex.matches(in: self, options: [], range: NSMakeRange(0, nsString.length))
+        let matches = results.map { result in
+            (0 ..< result.numberOfRanges).map {
+                result.range(at: $0).location != NSNotFound
+                    ? nsString.substring(with: result.range(at: $0))
+                    : ""
+            }
+        }
+        return matches.count > 0 ? matches.first! : []
+    }
+
     func indexesOf(string: String) -> [Int] {
-        guard !string.isEmpty else { return []}
-        
+        guard !string.isEmpty else { return [] }
+
         var indices = [Int]()
 
         let searchText = string.lowercased()
@@ -14,8 +46,8 @@ extension String {
         var searchStartIndex = selfText.startIndex
 
         while searchStartIndex < endIndex,
-            let range = selfText.range(of: searchText, range: searchStartIndex ..< selfText.endIndex),
-            !range.isEmpty {
+              let range = selfText.range(of: searchText, range: searchStartIndex ..< selfText.endIndex),
+              !range.isEmpty {
             let index = selfText.distance(from: selfText.startIndex, to: range.lowerBound)
             indices.append(index)
             searchStartIndex = range.upperBound
@@ -176,35 +208,37 @@ extension String {
     }
 }
 
-
 extension StringProtocol {
     func index<S: StringProtocol>(of string: S, options: String.CompareOptions = []) -> Index? {
         range(of: string, options: options)?.lowerBound
     }
+
     func endIndex<S: StringProtocol>(of string: S, options: String.CompareOptions = []) -> Index? {
         range(of: string, options: options)?.upperBound
     }
+
     func indices<S: StringProtocol>(of string: S, options: String.CompareOptions = []) -> [Index] {
         var indices: [Index] = []
         var startIndex = self.startIndex
         while startIndex < endIndex,
-            let range = self[startIndex...]
-                .range(of: string, options: options) {
-                indices.append(range.lowerBound)
-                startIndex = range.lowerBound < range.upperBound ? range.upperBound :
-                    index(range.lowerBound, offsetBy: 1, limitedBy: endIndex) ?? endIndex
+              let range = self[startIndex...]
+              .range(of: string, options: options) {
+            indices.append(range.lowerBound)
+            startIndex = range.lowerBound < range.upperBound ? range.upperBound :
+                index(range.lowerBound, offsetBy: 1, limitedBy: endIndex) ?? endIndex
         }
         return indices
     }
+
     func ranges<S: StringProtocol>(of string: S, options: String.CompareOptions = []) -> [Range<Index>] {
         var result: [Range<Index>] = []
         var startIndex = self.startIndex
         while startIndex < endIndex,
-            let range = self[startIndex...]
-                .range(of: string, options: options) {
-                result.append(range)
-                startIndex = range.lowerBound < range.upperBound ? range.upperBound :
-                    index(range.lowerBound, offsetBy: 1, limitedBy: endIndex) ?? endIndex
+              let range = self[startIndex...]
+              .range(of: string, options: options) {
+            result.append(range)
+            startIndex = range.lowerBound < range.upperBound ? range.upperBound :
+                index(range.lowerBound, offsetBy: 1, limitedBy: endIndex) ?? endIndex
         }
         return result
     }

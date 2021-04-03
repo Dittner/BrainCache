@@ -9,21 +9,25 @@ import SwiftUI
 
 class FileToFolderDragProcessor: ObservableObject {
     @Published var draggingFile: File?
+    @Published var draggingFolder: Folder?
     @Published var dropCandidate: Folder?
 
     func perform() -> Bool {
-        guard let draggingFile = draggingFile else { return false }
         guard let dropCandidate = dropCandidate else { return false }
+        if let draggingFile = draggingFile {
+            draggingFile.updateFolderUID(uid: dropCandidate.uid)
+        } else if let draggingFolder = draggingFolder {
+            draggingFolder.parentFolderUID = dropCandidate.uid
+        }
 
-        draggingFile.updateFolderUID(uid: dropCandidate.uid)
-
-        self.draggingFile = nil
+        draggingFile = nil
+        draggingFolder = nil
         self.dropCandidate = nil
         return true
     }
 }
 
-struct FileToFolderDropViewDelegate: DropDelegate {
+struct FolderDropViewDelegate: DropDelegate {
     let destFolder: Folder
     let dragProcessor: FileToFolderDragProcessor
     init(destFolder: Folder, dragProcessor: FileToFolderDragProcessor) {
@@ -32,8 +36,13 @@ struct FileToFolderDropViewDelegate: DropDelegate {
     }
 
     func validateDrop(info: DropInfo) -> Bool {
-        guard let srcFile = dragProcessor.draggingFile else { return false }
-        return srcFile.folderUID != destFolder.uid
+        if let srcFile = dragProcessor.draggingFile {
+            return srcFile.folderUID != destFolder.uid
+        } else if let srcFolder = dragProcessor.draggingFolder {
+            return srcFolder.uid != destFolder.uid && destFolder.parentFolderUID == nil
+        } else {
+            return false
+        }
     }
 
     func dropEntered(info: DropInfo) {

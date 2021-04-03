@@ -11,27 +11,22 @@ struct FolderListView: View {
     @ObservedObject private var vm = FolderListVM.shared
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 0) {
-            if vm.folders.count > 0 {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .trailing, spacing: 1) {
-                        ForEach(vm.folders, id: \.id) { f in
-                            FolderListCell(folder: f, isSelected: f == vm.selectedFolder) {
-                                vm.selectFolder(f)
-                            }
-                        }
-
-                        HSeparatorView()
-
-                        TextButton(text: "New Folder", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
-                            self.vm.createFolder()
-                        }
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .trailing, spacing: 1) {
+                ForEach(vm.folders, id: \.id) { f in
+                    FolderListCell(folder: f, isSelected: f == vm.selectedFolder) {
+                        vm.selectFolder(f)
                     }
-                }.frame(maxHeight: .infinity)
-            } else {
-                Spacer()
+                }
+
+                HSeparatorView()
+
+                TextButton(text: "New Folder", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
+                    self.vm.createFolder()
+                }
             }
         }
+        .fillParent()
         .background(LinearGradient(gradient: Gradient(colors: Colors.folderListBG), startPoint: .top, endPoint: .bottom))
     }
 }
@@ -50,7 +45,6 @@ struct FolderListCell: View {
     private let isSelected: Bool
 
     init(folder: Folder, isSelected: Bool, didSelectAction: @escaping () -> Void) {
-        print("FolderListCell, folder: \(folder.title)")
         self.folder = folder
         self.isSelected = isSelected
         self.didSelectAction = didSelectAction
@@ -103,7 +97,8 @@ struct FolderListCell: View {
         .padding(.horizontal, SizeConstants.padding)
         .foregroundColor(isSelected ? Colors.textLight.color : Colors.textDark.color)
         .frame(width: SizeConstants.folderListWidth, height: SizeConstants.listCellHeight)
-        .onDrop(of: ["public.plain-text"], delegate: FileToFolderDropViewDelegate(destFolder: folder, dragProcessor: dragProcessor))
+        .onDrag { self.dragProcessor.draggingFolder = folder; return NSItemProvider(object: NSString()) }
+        .onDrop(of: ["public.plain-text"], delegate: FolderDropViewDelegate(destFolder: folder, dragProcessor: dragProcessor))
         .border(dragProcessor.dropCandidate?.uid == folder.uid ? Colors.focus.color : Colors.clear.color)
 
         .if(!isSelected) {
