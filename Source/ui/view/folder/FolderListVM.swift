@@ -41,7 +41,6 @@ class FolderListVM: ObservableObject {
                 self.setupLastOpenedFolder(folders)
             }.store(in: &disposeBag)
 
-
         $selectedFolder
             .compactMap { $0 }
             .flatMap { $0.$selectedFile }
@@ -58,7 +57,7 @@ class FolderListVM: ObservableObject {
     }
 
     var firstLaunch: Bool = true
-    private func setupLastOpenedFolder(_ folders:[Folder]) {
+    private func setupLastOpenedFolder(_ folders: [Folder]) {
         if let folderUID = Cache.readUID(key: .lastOpenedFolderUID), let folder = folders.first(where: { $0.uid == folderUID }) {
             selectFolder(folder)
         } else if folders.count > 0 {
@@ -83,19 +82,19 @@ class FolderListVM: ObservableObject {
 
     func createTextFile() {
         if let folder = selectedFolder {
-            _ = foldersAppService.createTextFile(from: folder)
+            foldersAppService.createTextFile(from: folder)
         }
     }
 
     func createTableFile(with columnCount: Int) {
         if let folder = selectedFolder {
-            _ = foldersAppService.createTableFile(from: folder, with: columnCount)
+            foldersAppService.createTableFile(from: folder, with: columnCount)
         }
     }
 
     func createListFile(with columnCount: Int) {
         if let folder = selectedFolder {
-            _ = foldersAppService.createListFile(from: folder, with: columnCount)
+            foldersAppService.createListFile(from: folder, with: columnCount)
         }
     }
 
@@ -110,29 +109,29 @@ class FolderListVM: ObservableObject {
         foldersAppService.updateFolderTitle(f, title: title)
         folders = folders.sorted(by: { $0.title < $1.title })
     }
-    
+
     //
     // files
     //
-    
+
     func updateFileTitle(_ f: File, title: String) {
         filesAppService.updateFileTitle(f, title: title)
         files = files.sorted(by: { $0.title < $1.title })
     }
-    
+
     func selectFile(_ f: File) {
         filesAppService.selectFile(f)
     }
-    
+
     func destroyFile(_ f: File) {
         filesAppService.destroyFile(f)
     }
-    
+
     func updateFileFont(_ f: File, useMonoFont: Bool) {
         filesAppService.updateFileFont(f, useMonoFont: useMonoFont)
     }
-    
-    func deleteColumn(_ f:File, at index: Int) {
+
+    func deleteColumn(_ f: File, at index: Int) {
         filesAppService.deleteColumn(f, at: index)
     }
 }

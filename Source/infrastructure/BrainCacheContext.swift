@@ -16,7 +16,6 @@ class BrainCacheContext: ObservableObject {
     let dispatcher: DomainEventDispatcher
     let modelVersion: UInt = 3
     let fileExtension = "bc"
-    let menuAPI: MenuAPI
     let storage: FolderStorage
 
     init() {
@@ -33,7 +32,6 @@ class BrainCacheContext: ObservableObject {
         logInfo(msg: "BrainCacheContext init")
 
         dispatcher = DomainEventDispatcher()
-        menuAPI = MenuAPI()
 
         let migration = Migration(modelVersion: modelVersion, dispatcher: dispatcher)
         migration.migrateIfNecessary()

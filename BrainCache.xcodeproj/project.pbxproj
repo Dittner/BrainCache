@@ -63,7 +63,6 @@
 		5B4ECF8D261B3895000BB24A /* ListFileBodySerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4ECF8A261B3895000BB24A /* ListFileBodySerializer.swift */; };
 		5B4ECF8E261B3895000BB24A /* TableFileBodySerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4ECF8B261B3895000BB24A /* TableFileBodySerializer.swift */; };
 		5B4ECF96261B4E83000BB24A /* DTO_v3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4ECF90261B3B14000BB24A /* DTO_v3.swift */; };
-		5B5AF62326096A6C00387272 /* MenuAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5AF62226096A6C00387272 /* MenuAPI.swift */; };
 		5B75DFD22610B3D8001013FF /* TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFD12610B3D8001013FF /* TableView.swift */; };
 		5B75DFD92610B47E001013FF /* TableController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFD82610B47E001013FF /* TableController.swift */; };
 		5B75DFDD2610B513001013FF /* ListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFDC2610B513001013FF /* ListController.swift */; };
@@ -143,7 +142,6 @@
 		5B4ECF8A261B3895000BB24A /* ListFileBodySerializer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListFileBodySerializer.swift; sourceTree = "<group>"; };
 		5B4ECF8B261B3895000BB24A /* TableFileBodySerializer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableFileBodySerializer.swift; sourceTree = "<group>"; };
 		5B4ECF90261B3B14000BB24A /* DTO_v3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTO_v3.swift; sourceTree = "<group>"; };
-		5B5AF62226096A6C00387272 /* MenuAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuAPI.swift; sourceTree = "<group>"; };
 		5B75DFD12610B3D8001013FF /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
 		5B75DFD52610B41D001013FF /* TextFileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileView.swift; sourceTree = "<group>"; };
 		5B75DFD72610B450001013FF /* ListFileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFileView.swift; sourceTree = "<group>"; };
@@ -225,7 +223,6 @@
 			isa = PBXGroup;
 			children = (
 				5B3E171526061AA400D2CECC /* FileSystemAPI.swift */,
-				5B5AF62226096A6C00387272 /* MenuAPI.swift */,
 				5B4ECF73261B2C6D000BB24A /* FileListAppService.swift */,
 				5B4ECF70261B1D7A000BB24A /* FolderListAppService.swift */,
 			);
@@ -583,7 +580,6 @@
 				5B288A8526073C4100CF175F /* NSTextField++.swift in Sources */,
 				5B3B77722614A9090003DAD5 /* FileToFolderDragProcessor.swift in Sources */,
 				5B4ECF8E261B3895000BB24A /* TableFileBodySerializer.swift in Sources */,
-				5B5AF62326096A6C00387272 /* MenuAPI.swift in Sources */,
 				5BE6D032260DF6FE000D0AA9 /* VScrollBar.swift in Sources */,
 				5B3E17652606A79900D2CECC /* HSeparatorView.swift in Sources */,
 				5B3E16F0260609EA00D2CECC /* Array++.swift in Sources */,

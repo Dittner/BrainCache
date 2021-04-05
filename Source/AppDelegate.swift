@@ -39,57 +39,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
-    
+
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         NSApplication.shared.hide(nil)
         return false
-    }
-
-    // Menu Edit
-
-    @IBOutlet var deleteFileMenu: NSMenuItem!
-    @IBOutlet var deleteFolderMenu: NSMenuItem!
-    @IBOutlet var monoFontMenu: NSMenuItem!
-
-    @IBAction func menuDeleteFolder(_ sender: Any) {
-        BrainCacheContext.shared.menuAPI.subject.send(.deleteFolder)
-    }
-
-    @IBAction func menuDeleteFile(_ sender: Any) {
-        BrainCacheContext.shared.menuAPI.subject.send(.deleteFile)
-    }
-
-    @IBAction func menuMonoFont(_ sender: Any) {
-        monoFontMenu.state = monoFontMenu.state == .off ? .on : .off
-        BrainCacheContext.shared.menuAPI.subject.send(.monoFontSelected(value: monoFontMenu.state == .on))
-    }
-
-    // Menu File
-
-    @IBOutlet var createTextFileMenu: NSMenuItem!
-    @IBOutlet var createTableMenu: NSMenuItem!
-    @IBOutlet var createListMenu: NSMenuItem!
-
-    @IBAction func createTextFile(_ sender: Any) {
-        BrainCacheContext.shared.menuAPI.subject.send(.createTextFile)
-    }
-
-    @IBAction func createFolder(_ sender: Any) {
-        BrainCacheContext.shared.menuAPI.subject.send(.createFolder)
-    }
-
-    @IBAction func createTable(_ sender: Any) {
-        if let menuItem = sender as? NSMenuItem {
-            let columns = Int(menuItem.title.filter { "0" ... "9" ~= $0 }) ?? 2
-            BrainCacheContext.shared.menuAPI.subject.send(.createTable(columns: columns))
-        }
-    }
-
-    @IBAction func createList(_ sender: Any) {
-        if let menuItem = sender as? NSMenuItem {
-            let columns = Int(menuItem.title.filter { "0" ... "9" ~= $0 }) ?? 2
-            BrainCacheContext.shared.menuAPI.subject.send(.createList(columns: columns))
-        }
     }
 }
 

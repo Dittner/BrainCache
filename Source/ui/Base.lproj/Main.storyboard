@@ -49,159 +49,6 @@
                                     </items>
                                 </menu>
                             </menuItem>
-                            <menuItem title="File" id="dMs-cI-mzQ">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="File" autoenablesItems="NO" id="bib-Uj-vzu">
-                                    <items>
-                                        <menuItem title="New Folder" id="a2C-zw-WJ5">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="createFolder:" target="Voe-Tx-rLC" id="tqi-VR-N0f"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="New Text File" id="FwD-hV-V7J">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="createTextFile:" target="Voe-Tx-rLC" id="9KV-s9-Osd"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="New Table" id="nbb-zb-TA6">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="New Table" autoenablesItems="NO" id="7Wz-mF-XsQ">
-                                                <items>
-                                                    <menuItem title="1 Column" id="WX9-OR-AOY">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="BPW-2g-MBt"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="2 Columns" id="mrA-bF-2Tg">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="n0p-AH-zLw"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="3 Columns" id="kqi-O5-cSQ">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="mct-Sf-Ltw"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="4 Columns" id="Jt9-4k-rtZ">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="E3y-an-MhF"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="5 Columns" id="yig-HW-V9R">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="irQ-cx-BeF"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="6 Columns" id="DJu-8x-RGr">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="JGF-iQ-uTy"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="7 Columns" id="B15-wa-bjf">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="bcu-a3-Y1b"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="8 Columns" id="nfi-tL-7RR">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="Xby-oT-h8Y"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="9 Columns" id="vZM-gN-wrI">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="EC2-MV-ueA"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="10 Columns" id="2bA-7a-L6L">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createTable:" target="Voe-Tx-rLC" id="Zf9-cp-o2e"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                </items>
-                                            </menu>
-                                        </menuItem>
-                                        <menuItem title="New List" id="j7E-b8-Ch8">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="New List" autoenablesItems="NO" id="JWJ-jd-fvy">
-                                                <items>
-                                                    <menuItem title="1 Column" id="QUL-jP-30A">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="bj4-zw-8il"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="2 Columns" id="hAV-ag-ukT">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="ZcR-cp-rHV"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="3 Columns" id="CEG-BV-W78">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="VqE-sy-DU3"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="4 Columns" id="tiz-oG-0Ib">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="gnu-Ky-3KF"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="5 Columns" id="zgH-mv-0mX">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="ZI4-iI-TTT"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="6 Columns" id="gBe-9h-mEN">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="JwG-21-lmt"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="7 Columns" id="ON0-cp-huI">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="wob-5g-Yrp"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="8 Columns" id="WP1-hN-cbz">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="5iv-Qs-psq"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="9 Columns" id="SV7-z3-rk0">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="5SN-UJ-Y2z"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="10 Columns" id="3Ia-vj-KGq">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="createList:" target="Voe-Tx-rLC" id="nFR-Yf-xkS"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                </items>
-                                            </menu>
-                                        </menuItem>
-                                    </items>
-                                </menu>
-                            </menuItem>
                             <menuItem title="Edit" id="5QF-Oa-p0T">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Edit" autoenablesItems="NO" id="W48-6f-4Dl">
@@ -235,26 +82,6 @@
                                         <menuItem title="Select All" keyEquivalent="a" id="ciP-pK-PBs">
                                             <connections>
                                                 <action selector="selectAll:" target="Ady-hI-5gd" id="JYN-Dv-lic"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="0RU-7F-KfZ"/>
-                                        <menuItem title="Delete File" enabled="NO" id="pa3-QI-u2k">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="menuDeleteFile:" target="Voe-Tx-rLC" id="YtC-P9-mVu"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Delete Folder" enabled="NO" id="Ruw-6m-B2m">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="menuDeleteFolder:" target="Voe-Tx-rLC" id="ngN-T9-xZx"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="uyl-h8-XO2"/>
-                                        <menuItem title="Use Mono Font" enabled="NO" id="HnU-Bf-pMR">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="menuMonoFont:" target="Voe-Tx-rLC" id="zrw-8L-qUR"/>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -323,16 +150,7 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="BrainCache" customModuleProvider="target">
-                    <connections>
-                        <outlet property="createListMenu" destination="j7E-b8-Ch8" id="FXD-mQ-kXc"/>
-                        <outlet property="createTableMenu" destination="nbb-zb-TA6" id="1s2-Te-e3T"/>
-                        <outlet property="createTextFileMenu" destination="FwD-hV-V7J" id="gzI-cW-0iB"/>
-                        <outlet property="deleteFileMenu" destination="pa3-QI-u2k" id="iy5-z5-WIY"/>
-                        <outlet property="deleteFolderMenu" destination="Ruw-6m-B2m" id="cjy-cD-epW"/>
-                        <outlet property="monoFontMenu" destination="HnU-Bf-pMR" id="jYI-RV-VRY"/>
-                    </connections>
-                </customObject>
+                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="BrainCache" customModuleProvider="target"/>
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController representsSharedInstance="YES" id="jPr-4j-8Hq"/>

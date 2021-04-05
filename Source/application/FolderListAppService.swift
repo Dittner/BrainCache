@@ -22,25 +22,22 @@ class FolderListAppService {
         context.storage.destroy(folder: folder)
     }
 
-    func createTextFile(from folder: Folder) -> File {
+    func createTextFile(from folder: Folder) {
         let f = File.createTextFile()
         folder.add(f)
         context.storage.write(newFile: f)
-        return f
     }
 
-    func createTableFile(from folder: Folder, with columnCount: Int) -> File {
+    func createTableFile(from folder: Folder, with columnCount: Int) {
         let f = File.createTableFile(columnCount: columnCount)
         folder.add(f)
         context.storage.write(newFile: f)
-        return f
     }
 
-    func createListFile(from folder: Folder, with columnCount: Int) -> File {
+    func createListFile(from folder: Folder, with columnCount: Int) {
         let f = File.createListFile(columnCount: columnCount)
         folder.add(f)
         context.storage.write(newFile: f)
-        return f
     }
 
     func updateFolderTitle(_ f: Folder, title: String) {
