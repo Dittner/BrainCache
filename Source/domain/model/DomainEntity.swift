@@ -13,6 +13,10 @@ class DomainEntity {
         self.uid = uid
         self.dispatcher = dispatcher
     }
+    
+    func notifyStateDidChange() {
+        self.dispatcher.notify(.entityStateChanged(entity: self))
+    }
 }
 
 extension DomainEntity: Identifiable {

@@ -9,7 +9,7 @@ import Combine
 import SwiftUI
 
 struct FileListView: View {
-    @ObservedObject private var vm = FileListVM.shared
+    @ObservedObject private var vm = FolderListVM.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -17,12 +17,8 @@ struct FileListView: View {
 
             HSeparatorView()
 
-            if let folder = vm.selectedFolder, let file = vm.selectedFile, let fileBody = file.body as? TextFileBody {
-                TextFileView(file: file, fileBody: fileBody, folder: folder)
-            } else if let folder = vm.selectedFolder, let file = vm.selectedFile, let fileBody = file.body as? TableFileBody {
-                TableFileView(file: file, fileBody: fileBody, folder: folder)
-            } else if let folder = vm.selectedFolder, let file = vm.selectedFile, let fileBody = file.body as? ListFileBody {
-                ListFileView(file: file, fileBody: fileBody, folder: folder)
+            if let folder = vm.selectedFolder {
+                FileBodyView(folder: folder)
             } else {
                 Spacer()
             }
@@ -32,7 +28,7 @@ struct FileListView: View {
 }
 
 struct FileHeaderList: View {
-    @ObservedObject private var vm = FileListVM.shared
+    @ObservedObject private var vm = FolderListVM.shared
     @ObservedObject var dragProcessor: FileToFolderDragProcessor
     @State var fileListOffset: CGFloat = 0
 
@@ -51,7 +47,7 @@ struct FileHeaderList: View {
                 HStack(alignment: .center, spacing: -1) {
                     if vm.files.count > 0 {
                         ForEach(vm.files, id: \.uid) { f in
-                            FileListCell(file: f, isSelected: f.uid == vm.selectedFile?.uid)
+                            FileHeaderCell(file: f, isSelected: f.uid == vm.selectedFile?.uid)
                                 .onDrag { self.dragProcessor.draggingFile = f; return NSItemProvider(object: NSString()) }
                             VSeparatorView(verticalPadding: 5)
                         }
@@ -80,8 +76,8 @@ struct FileHeaderList: View {
                     .opacity(isNextBtnEnabled(containerWidth: proxy.size.width, offset: fileListOffset) ? 1 : 0.4)
                     .disabled(!isNextBtnEnabled(containerWidth: proxy.size.width, offset: fileListOffset))
 
-                if let folder = vm.selectedFolder {
-                    SearchInputView(folder: folder)
+                if vm.selectedFile != nil {
+                    SearchInputView()
                 }
 
             }.frame(width: proxy.size.width, height: SizeConstants.appHeaderHeight, alignment: .leading)
@@ -91,9 +87,9 @@ struct FileHeaderList: View {
     }
 }
 
-struct FileListCell: View {
+struct FileHeaderCell: View {
     @ObservedObject private var file: File
-    private let vm = FileListVM.shared
+    private let vm = FolderListVM.shared
     private let isSelected: Bool
 
     init(file: File, isSelected: Bool) {
@@ -114,7 +110,7 @@ struct FileListCell: View {
                 .padding(.leading, SizeConstants.padding)
 
             EditableText(file.title, uid: file.uid) { value in
-                file.updateTitle(title: value)
+                vm.updateFileTitle(file, title: value)
             }
             .frame(height: SizeConstants.listCellHeight)
             .frame(width: SizeConstants.fileListWidth - 45)
@@ -141,7 +137,7 @@ struct FileListCell: View {
 struct FileMenuButton: View {
     @ObservedObject private var file: File
     @ObservedObject private var notifier = Notifier()
-    private let vm = FileListVM.shared
+    private let vm = FolderListVM.shared
 
     class Notifier: ObservableObject {
         @Published var stateChanged: Bool = false
@@ -164,37 +160,43 @@ struct FileMenuButton: View {
                 if let tableBody = file.body as? TableFileBody {
                     Button("Add Row") { tableBody.addNewRow() }
                     Button("Add Column") { tableBody.addNewColumn() }
-                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.updateFont(useMonoFont: !file.useMonoFont) }
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") {
+                        vm.updateFileFont(file, useMonoFont: !file.useMonoFont)
+                    }
                     MenuButton("Delete ...") {
                         if tableBody.headers.count > 1 {
                             ForEach(tableBody.headers.enumeratedArray(), id: \.offset) { index, header in
                                 Button("C\(index + 1): «\(header.title)»") {
-                                    tableBody.deleteColumn(at: index)
+                                    vm.deleteColumn(file, at: index)
                                 }
                             }
                         }
 
-                        Button("Delete Table") { vm.deleteFile() }
+                        Button("Delete Table") { vm.destroyFile(file) }
                     }
 
                 } else if let listBody = file.body as? ListFileBody {
                     Button("Add Column") { listBody.addNewColumn() }
-                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.updateFont(useMonoFont: !file.useMonoFont) }
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") {
+                        vm.updateFileFont(file, useMonoFont: !file.useMonoFont)
+                    }
                     MenuButton("Delete ...") {
                         if listBody.columns.count > 1 {
                             ForEach(listBody.columns.enumeratedArray(), id: \.offset) { index, column in
                                 Button("С\(index + 1): «\(column.title)»") {
-                                    listBody.deleteColumn(at: index)
+                                    vm.deleteColumn(file, at: index)
                                 }
                             }
                         }
 
-                        Button("Delete List") { vm.deleteFile() }
+                        Button("Delete List") { vm.destroyFile(file) }
                     }
 
                 } else {
-                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") { file.updateFont(useMonoFont: !file.useMonoFont) }
-                    Button("Delete File") { vm.deleteFile() }
+                    Button(file.useMonoFont ? "Use Default Font" : "Use Mono Font") {
+                        vm.updateFileFont(file, useMonoFont: !file.useMonoFont)
+                    }
+                    Button("Delete File") { vm.destroyFile(file) }
                 }
             })
             .menuButtonStyle(BorderlessButtonMenuButtonStyle())
@@ -203,11 +205,7 @@ struct FileMenuButton: View {
 }
 
 struct SearchInputView: View {
-    @ObservedObject private var folder: Folder
-
-    init(folder: Folder) {
-        self.folder = folder
-    }
+    @ObservedObject private var vm = FolderListVM.shared
 
     var body: some View {
         HStack(alignment: .center, spacing: 5) {
@@ -215,19 +213,42 @@ struct SearchInputView: View {
                 .allowsHitTesting(false)
                 .padding(.leading, 5)
 
-            EditableText(folder.search, uid: folder.searchUID, countClickActivation: 1) { value in
-                folder.search = value
+            EditableText(vm.search, uid: vm.searchInputUID, countClickActivation: 1) { value in
+                vm.search = value
             }
             .frame(height: SizeConstants.appHeaderHeight)
             .frame(maxWidth: SizeConstants.searchBarWidth - 40)
 
-            if folder.search.count > 0 {
-                IconButton(name: .close, size: SizeConstants.iconSize, color: folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color, width: SizeConstants.iconSize + 10, height: SizeConstants.iconSize + 10) {
-                    folder.search = ""
+            if vm.search.count > 0 {
+                IconButton(name: .close, size: SizeConstants.iconSize, color: vm.search.count > 0 ? Colors.textLight.color : Colors.textDark.color, width: SizeConstants.iconSize + 10, height: SizeConstants.iconSize + 10) {
+                    vm.search = ""
                 }
             }
         }
         .frame(width: SizeConstants.searchBarWidth, height: SizeConstants.appHeaderHeight, alignment: .leading)
-        .foregroundColor(folder.search.count > 0 ? Colors.textLight.color : Colors.textDark.color)
+        .foregroundColor(vm.search.count > 0 ? Colors.textLight.color : Colors.textDark.color)
+    }
+}
+
+struct FileBodyView: View {
+    @ObservedObject private var folder: Folder
+
+    init(folder: Folder) {
+        self.folder = folder
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if let file = folder.selectedFile, let fileBody = file.body as? TextFileBody {
+                TextFileView(file: file, fileBody: fileBody)
+            } else if let file = folder.selectedFile, let fileBody = file.body as? TableFileBody {
+                TableFileView(file: file, fileBody: fileBody)
+            } else if let file = folder.selectedFile, let fileBody = file.body as? ListFileBody {
+                ListFileView(file: file, fileBody: fileBody)
+            } else {
+                Spacer()
+            }
+        }
+        .frame(maxHeight: .infinity)
     }
 }

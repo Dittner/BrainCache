@@ -7,12 +7,10 @@
 
 import Foundation
 
-struct TextFileBodyDTO_v1: Codable {
-    var text: String
-}
-
-class TextFileBodySerializer_v1: ISerializer {
+class TextFileBodySerializer: ISerializer {
     typealias Entity = TextFileBody
+    typealias TextFileBodyDTO = TextFileBodyDTO_v3
+    
     let encoder: JSONEncoder
     let decoder: JSONDecoder
 
@@ -22,11 +20,11 @@ class TextFileBodySerializer_v1: ISerializer {
     }
 
     func serialize(_ e: TextFileBody) throws -> Data {
-        return try encoder.encode(TextFileBodyDTO_v1(text: e.text))
+        return try encoder.encode(TextFileBodyDTO(text: e.text))
     }
 
     func deserialize(data: Data) throws -> TextFileBody {
-        let dto = try decoder.decode(TextFileBodyDTO_v1.self, from: data)
+        let dto = try decoder.decode(TextFileBodyDTO.self, from: data)
         return TextFileBody(text: dto.text)
     }
 }

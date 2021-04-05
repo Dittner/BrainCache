@@ -18,46 +18,55 @@ enum JSONRepoError: DetailedError {
 enum RepoID: String {
     case folder = "Folder Repo"
     case file = "File Repo"
-    case table = "Table Repo"
 }
 
-enum RepoMode: String {
-    case sync
-    case async
+class LoadDirectoryContentService {
+    func load(url: URL, fileExtension: String) -> [Data] {
+        var res: [Data] = []
+        do {
+            let urls = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil).filter { $0.pathExtension == fileExtension }
+
+            for fileURL in urls {
+                do {
+                    let data = try Data(contentsOf: fileURL)
+                    res.append(data)
+
+                } catch {
+                    logErr(msg: "LoadDirectoryContentService.load, failed to read data, url = \(fileURL), details: \(error.localizedDescription)")
+                }
+            }
+        } catch {
+            logErr(msg: "LoadDirectoryContentService.load, failed to read file urls from disk, details: \(error.localizedDescription)")
+        }
+
+        return res
+    }
 }
 
 class JSONRepository<E: DomainEntity>: IRepository {
     typealias Entity = E
-
-    let fileExtension = "bc"
+    
     let subject = CurrentValueSubject<[Entity], Never>([])
 
     private let repoID: RepoID
-    private let mode: RepoMode
     private let url: URL
-    private var hash: [UID: Entity] = [:]
-    private let serialize: (Entity) throws -> Data
-    private let deserialize: (Data) throws -> Entity
+    private let fileExtension: String
     private let dispatcher: DomainEventDispatcher
-    private(set) var isReady: Bool = false
+    
+    private var hash: [UID: Entity] = [:]
+    private var serialize: ((Entity) throws -> Data)?
 
-    init(repoID: RepoID, dispatcher: DomainEventDispatcher, storeTo: URL, mode: RepoMode = .async, serialize: @escaping (E) throws -> Data, deserialize: @escaping (Data) throws -> E) {
+    init(repoID: RepoID, url: URL, fileExtension:String, dispatcher: DomainEventDispatcher) {
         logInfo(msg: "JSONRepo <\(repoID)> init")
         self.repoID = repoID
-        self.mode = mode
-
-        self.serialize = serialize
-        self.deserialize = deserialize
-
+        self.url = url
+        self.fileExtension = fileExtension
         self.dispatcher = dispatcher
-        url = storeTo
-
-        createStorageIfNeeded()
-        readEntitiesFromDisk(mode)
-        subscribeToDispatcher()
+        
+        createDirectoriesIfNeeded()
     }
 
-    private func createStorageIfNeeded() {
+    private func createDirectoriesIfNeeded() {
         if !FileManager.default.fileExists(atPath: url.path) {
             do {
                 try FileManager.default.createDirectory(atPath: url.path, withIntermediateDirectories: true, attributes: nil)
@@ -67,52 +76,49 @@ class JSONRepository<E: DomainEntity>: IRepository {
         }
     }
 
-    private func readEntitiesFromDisk(_ mode: RepoMode) {
-        if mode == .async {
-            DispatchQueue.global(qos: .background).async {
-                let entities = self.readFilesAndDeserializeToEntities()
-
-                DispatchQueue.main.async {
-                    if entities.count > 0 {
-                        self.subject.send(entities)
-                    }
-                    self.isReady = true
-                    self.dispatcher.subject.send(.repoIsReady(repoID: self.repoID))
-                }
-            }
-        } else {
-            let entities = readFilesAndDeserializeToEntities()
-
-            if entities.count > 0 {
-                subject.send(entities)
-            }
-            isReady = true
-            dispatcher.subject.send(.repoIsReady(repoID: repoID))
-        }
+    func loadFromDisk() -> [Data] {
+        let loadService = LoadDirectoryContentService()
+        return loadService.load(url: url, fileExtension: self.fileExtension)
     }
 
-    private func readFilesAndDeserializeToEntities() -> [Entity] {
-        var res = [Entity]()
-        do {
-            let urls = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil).filter { $0.pathExtension == self.fileExtension }
-            logInfo(msg: "Repo = \(repoID.rawValue), entities count on the disk: \(urls.count)")
+    func deserialize<S: ISerializer>(data: [Data], serializer: S) -> [Entity] where S.Entity == Entity {
+        serialize = serializer.serialize
+        var entities: [Entity] = []
+        for d in data {
+            do {
+                let entity = try serializer.deserialize(data: d)
+                hash[entity.uid] = entity
+                entities.append(entity)
 
-            for fileURL in urls {
-                do {
-                    let data = try Data(contentsOf: fileURL)
-                    let entity = try deserialize(data)
-                    hash[entity.uid] = entity
-                    res.append(entity)
-
-                } catch {
-                    logErr(msg: "Repo = \(repoID.rawValue), failed to deserialize entity, url = \(fileURL), details: \(error.localizedDescription)")
-                }
+            } catch {
+                logErr(msg: "Repo = \(repoID.rawValue), failed to deserialize entity, details: \(error.localizedDescription)")
             }
-        } catch {
-            logErr(msg: "Repo = \(repoID.rawValue), failed to read entities urls from disk, details: \(error.localizedDescription)")
         }
 
-        return res
+        if entities.count > 0 {
+            DispatchQueue.main.async {
+                self.subject.send(entities)
+            }
+        }
+
+        return entities
+    }
+
+    private var disposeBag: Set<AnyCancellable> = []
+    func listenToEntitiesChanged() {
+        dispatcher.subject
+            .sink { event in
+                switch event {
+                case let .entityStateChanged(entity):
+                    self.pendingEntitiesToStore.append(entity.uid)
+                    self.storeChangesAsync()
+                }
+            }
+            .store(in: &disposeBag)
+    }
+
+    func getEntityStoreURL(_ e: Entity) -> URL {
+        return url.appendingPathComponent(e.uid.description + "." + fileExtension)
     }
 
     private func destroyEntity(_ e: Entity) throws {
@@ -127,31 +133,6 @@ class JSONRepository<E: DomainEntity>: IRepository {
                 throw JSONRepoError.removeEntityFromDiskFailed(repoID: repoID.rawValue, details: error.localizedDescription)
             }
         }
-    }
-
-    private var disposeBag: Set<AnyCancellable> = []
-    private func subscribeToDispatcher() {
-        dispatcher.subject
-            .sink { event in
-                switch event {
-                case let .entityStateChanged(entity):
-                    if let e = self.read(entity.uid) {
-                        if self.mode == .async {
-                            self.pendingEntitiesToStore.append(entity.uid)
-                            self.storeChangesAsync()
-                        } else {
-                            self.storeImmediately(e)
-                        }
-                    }
-                default:
-                    break
-                }
-            }
-            .store(in: &disposeBag)
-    }
-
-    func getEntityStoreURL(_ e: Entity) -> URL {
-        return url.appendingPathComponent(e.uid.description + "." + fileExtension)
     }
 
     func has(_ uid: UID) -> Bool {
@@ -187,12 +168,8 @@ class JSONRepository<E: DomainEntity>: IRepository {
             subject.send(subject.value + [entity])
         }
 
-        if mode == .async {
-            pendingEntitiesToStore.append(entity.uid)
-            storeChangesAsync()
-        } else {
-            storeImmediately(entity)
-        }
+        pendingEntitiesToStore.append(entity.uid)
+        storeChangesAsync()
     }
 
     private var pendingEntitiesToStore: [UID] = []
@@ -209,27 +186,23 @@ class JSONRepository<E: DomainEntity>: IRepository {
             }
             self.pendingEntitiesToStore = []
             self.isStorePending = false
-            self.dispatcher.subject.send(.repoStoreComplete(repoID: self.repoID))
         }
     }
 
     private func store(_ e: Entity) {
         DispatchQueue.global(qos: .utility).sync {
-            self.storeImmediately(e)
-        }
-    }
-
-    private func storeImmediately(_ e: Entity) {
-        do {
-            let fileUrl = getEntityStoreURL(e)
-            let data = try serialize(e)
             do {
-                try data.write(to: fileUrl)
+                let fileUrl = getEntityStoreURL(e)
+                let data = try serialize?(e)
+                do {
+                    try data?.write(to: fileUrl)
+                    print("Repo = \(repoID.rawValue): Entity(\(e.uid)) is written on the disk")
+                } catch {
+                    logErr(msg: "Repo = \(repoID.rawValue): Failed to write entity with id = \(e.id) on the disk, details:  \(error.localizedDescription)")
+                }
             } catch {
-                logErr(msg: "Repo = \(repoID.rawValue): Failed to write entity with id = \(e.id) on the disk, details:  \(error.localizedDescription)")
+                logErr(msg: "Repo = \(repoID.rawValue): Failed to serialize entity id = \(e.id), details:  \(error.localizedDescription)")
             }
-        } catch {
-            logErr(msg: "Repo = \(repoID.rawValue): Failed to serialize entity id = \(e.id), details:  \(error.localizedDescription)")
         }
     }
 }

@@ -13,6 +13,13 @@ class FolderListVM: ObservableObject {
 
     @Published var folders: [Folder] = []
     @Published var selectedFolder: Folder?
+    @Published var files: [File] = []
+    @Published var selectedFile: File?
+    @Published var search: String = ""
+    let searchInputUID: UID = UID()
+
+    private let foldersAppService: FolderListAppService
+    private let filesAppService: FileListAppService
 
     private(set) var fileToFolderDragProcessor: FileToFolderDragProcessor
     private var disposeBag: Set<AnyCancellable> = []
@@ -21,86 +28,74 @@ class FolderListVM: ObservableObject {
     init() {
         logInfo(msg: "FolderListVM init")
         context = BrainCacheContext.shared
-        fileToFolderDragProcessor = FileToFolderDragProcessor()
 
-        context.foldersRepo.subject
-            .debounce(for: 0.2, scheduler: RunLoop.main)
+        foldersAppService = FolderListAppService()
+        filesAppService = FileListAppService()
+
+        fileToFolderDragProcessor = FileToFolderDragProcessor(fileToFolderDidMoveAction: foldersAppService.moveToFolder, folderToFolderDidMoveAction: foldersAppService.moveToFolder)
+
+        context.storage.subject
             .sink { folders in
-                self.folders = folders.sorted(by: { $0.title < $1.title })
-                logInfo(msg: "FolderListVM received folders: \(self.folders.count)")
-                self.setupLastOpenedFolder()
+                self.folders = folders.sorted(by: { $0.title < $1.title }).filter { $0.parent == nil }
+                logInfo(msg: "FolderListVM received root folders: \(self.folders.count)")
+                self.setupLastOpenedFolder(folders)
+            }.store(in: &disposeBag)
+
+
+        $selectedFolder
+            .compactMap { $0 }
+            .flatMap { $0.$selectedFile }
+            .sink { file in
+                self.selectedFile = file
             }.store(in: &disposeBag)
 
         $selectedFolder
-            .sink { folder in
-                self.context.menuAPI.isDeleteFolderEnabled = folder != nil
-                self.context.menuAPI.isCreateTableEnabled = folder != nil
-                self.context.menuAPI.isCreateListEnabled = folder != nil
-                self.context.menuAPI.isCreateTextFileEnabled = folder != nil
-            }.store(in: &disposeBag)
-
-        context.menuAPI.subject
-            .sink { event in
-                switch event {
-                case .deleteFolder:
-                    self.deleteFolder()
-                case .createFolder:
-                    self.createFolder()
-                case .createTextFile:
-                    self.createTextFile()
-                case let .createTable(columns):
-                    self.createTableFile(with: columns)
-                case let .createList(columns):
-                    self.createListFile(with: columns)
-                default: break
-                }
+            .compactMap { $0 }
+            .flatMap { $0.$files }
+            .sink { files in
+                self.files = files.sorted(by: { $0.title < $1.title })
             }.store(in: &disposeBag)
     }
 
     var firstLaunch: Bool = true
-    private func setupLastOpenedFolder() {
+    private func setupLastOpenedFolder(_ folders:[Folder]) {
         if let folderUID = Cache.readUID(key: .lastOpenedFolderUID), let folder = folders.first(where: { $0.uid == folderUID }) {
             selectFolder(folder)
         } else if folders.count > 0 {
             selectFolder(folders[0])
         } else {
-            deselectFolder()
+            selectedFolder = nil
+            selectedFile = nil
+            files = []
         }
     }
 
     func createFolder() {
-        let newFolder = Folder(uid: UID(), title: "New Folder", dispatcher: context.dispatcher)
-        context.foldersRepo.write(newFolder)
-        selectFolder(newFolder)
+        let f = foldersAppService.createFolder()
+        selectFolder(f)
     }
-    
-    func deleteFolder() {
-        if let folder = self.selectedFolder {
-            self.context.entityRemover.removeFolderWithFiles(folder)
+
+    func destroyFolder() {
+        if let folder = selectedFolder {
+            foldersAppService.destroyFolder(folder)
         }
     }
 
     func createTextFile() {
         if let folder = selectedFolder {
-            let newFile = folder.createTextFile()
-            context.filesRepo.write(newFile)
-            FileListVM.shared.selectFile(newFile)
+            _ = foldersAppService.createTextFile(from: folder)
         }
     }
 
     func createTableFile(with columnCount: Int) {
         if let folder = selectedFolder {
-            let newFile = folder.createTableFile(columnCount: columnCount)
-            context.filesRepo.write(newFile)
-            FileListVM.shared.selectFile(newFile)
+            _ = foldersAppService.createTableFile(from: folder, with: columnCount)
         }
     }
-    
+
     func createListFile(with columnCount: Int) {
         if let folder = selectedFolder {
-            let newFile = folder.createListFile(columnCount: columnCount)
-            context.filesRepo.write(newFile)
-            FileListVM.shared.selectFile(newFile)
+            _ = foldersAppService.createListFile(from: folder, with: columnCount)
         }
     }
 
@@ -110,13 +105,34 @@ class FolderListVM: ObservableObject {
             Cache.write(key: .lastOpenedFolderUID, value: f.uid)
         }
     }
-    
-    func updateFolder(_ f:Folder, title:String) {
-        f.title = title
-        self.folders = folders.sorted(by: { $0.title < $1.title })
+
+    func updateFolderTitle(_ f: Folder, title: String) {
+        foldersAppService.updateFolderTitle(f, title: title)
+        folders = folders.sorted(by: { $0.title < $1.title })
     }
     
-    func deselectFolder() {
-        selectedFolder = nil
+    //
+    // files
+    //
+    
+    func updateFileTitle(_ f: File, title: String) {
+        filesAppService.updateFileTitle(f, title: title)
+        files = files.sorted(by: { $0.title < $1.title })
+    }
+    
+    func selectFile(_ f: File) {
+        filesAppService.selectFile(f)
+    }
+    
+    func destroyFile(_ f: File) {
+        filesAppService.destroyFile(f)
+    }
+    
+    func updateFileFont(_ f: File, useMonoFont: Bool) {
+        filesAppService.updateFileFont(f, useMonoFont: useMonoFont)
+    }
+    
+    func deleteColumn(_ f:File, at index: Int) {
+        filesAppService.deleteColumn(f, at: index)
     }
 }

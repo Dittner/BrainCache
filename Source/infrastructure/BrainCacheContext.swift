@@ -14,11 +14,10 @@ class BrainCacheContext: ObservableObject {
     static var shared = BrainCacheContext()
 
     let dispatcher: DomainEventDispatcher
-    let repoModelVer: UInt = 2
-    let foldersRepo: JSONRepository<Folder>
-    let filesRepo: JSONRepository<File>
+    let modelVersion: UInt = 3
+    let fileExtension = "bc"
     let menuAPI: MenuAPI
-    let entityRemover: DomainEntityRemover
+    let storage: FolderStorage
 
     init() {
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -30,25 +29,23 @@ class BrainCacheContext: ObservableObject {
         FileSystemAPI.shared = FileSystemAPI(documentsURL: hasDropboxProjectDir ? dropboxUrl : documentsURL)
 
         Logger.run()
-        BrainCacheContext.logAbout(repoModelVer)
+        BrainCacheContext.logAbout(modelVersion)
         logInfo(msg: "BrainCacheContext init")
 
         dispatcher = DomainEventDispatcher()
         menuAPI = MenuAPI()
-        entityRemover = DomainEntityRemover()
 
-        let repoManager = RepoManager(actualVersion: repoModelVer, dispatcher: dispatcher)
-        repoManager.migrateIfNecessary()
-        foldersRepo = repoManager.getActualFolderRepo()
-        filesRepo = repoManager.getActualFileRepo()
+        let migration = Migration(modelVersion: modelVersion, dispatcher: dispatcher)
+        migration.migrateIfNecessary()
+        storage = FolderStorage(modelVersion: modelVersion, fileExtension: fileExtension, dispatcher: dispatcher)
     }
 
-    static func logAbout(_ repoModelVer: UInt) {
+    static func logAbout(_ modelVersion: UInt) {
         var aboutLog: String = "BrainCache Logs\n"
         let ver: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
         let build: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
         aboutLog += "v." + ver + "." + build + "\n"
-        aboutLog += "repo model v.\(repoModelVer)\n"
+        aboutLog += "model v.\(modelVersion)\n"
 
         #if DEBUG
             aboutLog += "debug mode\n"

@@ -11,19 +11,18 @@ import SwiftUI
 struct TextFileView: View {
     @ObservedObject private var file: File
     private let fileBody: TextFileBody
-    @ObservedObject private var folder: Folder
+    @ObservedObject private var vm = FolderListVM.shared
     @ObservedObject private var notifier = HeightDidChangeNotifier()
 
-    init(file: File, fileBody: TextFileBody, folder: Folder) {
+    init(file: File, fileBody: TextFileBody) {
         self.file = file
         self.fileBody = fileBody
-        self.folder = folder
     }
 
     var body: some View {
         GeometryReader { proxy in
             VScrollBar(uid: file.uid) {
-                TextFileBodyView(fileBody: fileBody, useMonoFont: file.useMonoFont, searchText: folder.search, width: proxy.size.width, minHeight: proxy.size.height)
+                TextFileBodyView(fileBody: fileBody, useMonoFont: file.useMonoFont, searchText: vm.search, width: proxy.size.width, minHeight: proxy.size.height)
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }

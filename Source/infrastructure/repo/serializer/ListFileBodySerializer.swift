@@ -7,18 +7,11 @@
 
 import Foundation
 
-struct ListFileBodyDTO_v1: Codable {
-    var columns: [ListFileColumnDTO_v1]
-}
-
-struct ListFileColumnDTO_v1: Codable {
-    var title: String
-    var text: String
-    var ratio: CGFloat
-}
-
-class ListFileBodySerializer_v1: ISerializer {
+class ListFileBodySerializer: ISerializer {
     typealias Entity = ListFileBody
+    typealias ListFileColumnDTO = ListFileColumnDTO_v3
+    typealias ListFileBodyDTO = ListFileBodyDTO_v3
+
     let encoder: JSONEncoder
     let decoder: JSONDecoder
 
@@ -28,12 +21,12 @@ class ListFileBodySerializer_v1: ISerializer {
     }
 
     func serialize(_ e: ListFileBody) throws -> Data {
-        let columns = e.columns.map { ListFileColumnDTO_v1(title: $0.title, text: $0.text, ratio: $0.ratio) }
-        return try encoder.encode(ListFileBodyDTO_v1(columns: columns))
+        let columns = e.columns.map { ListFileColumnDTO(title: $0.title, text: $0.text, ratio: $0.ratio) }
+        return try encoder.encode(ListFileBodyDTO(columns: columns))
     }
 
     func deserialize(data: Data) throws -> ListFileBody {
-        let dto = try decoder.decode(ListFileBodyDTO_v1.self, from: data)
+        let dto = try decoder.decode(ListFileBodyDTO.self, from: data)
         let columns = dto.columns.map { ListColumn(title: $0.title, text: $0.text, ratio: $0.ratio) }
         return ListFileBody(columns: columns)
     }

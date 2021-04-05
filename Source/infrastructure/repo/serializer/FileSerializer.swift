@@ -12,36 +12,28 @@ enum FileSerializerError: DetailedError {
     case fileBodyNotFoundBySerialization(details: String)
 }
 
-struct FileDTO_v1: Codable {
-    var uid: UID
-    var folderUID: UID
-    var title: String
-    var textBody: Data?
-    var tableBody: Data?
-    var listFileBody: Data?
-    var useMonoFont: Bool
-}
-
-class FileSerializer_v1: ISerializer {
+class FileSerializer: ISerializer {
     typealias Entity = File
+    typealias FileDTO = FileDTO_v3
+
     let dispatcher: DomainEventDispatcher
     let encoder: JSONEncoder
     let decoder: JSONDecoder
-    let textBodySerializer: TextFileBodySerializer_v1
-    let tableBodySerializer: TableFileBodySerializer_v1
-    let listBodySerializer: ListFileBodySerializer_v1
+    let textBodySerializer: TextFileBodySerializer
+    let tableBodySerializer: TableFileBodySerializer
+    let listBodySerializer: ListFileBodySerializer
 
     init(dispatcher: DomainEventDispatcher) {
         self.dispatcher = dispatcher
         encoder = JSONEncoder()
         decoder = JSONDecoder()
-        textBodySerializer = TextFileBodySerializer_v1()
-        tableBodySerializer = TableFileBodySerializer_v1()
-        listBodySerializer = ListFileBodySerializer_v1()
+        textBodySerializer = TextFileBodySerializer()
+        tableBodySerializer = TableFileBodySerializer()
+        listBodySerializer = ListFileBodySerializer()
     }
 
     func serialize(_ e: File) throws -> Data {
-        var dto = FileDTO_v1(uid: e.uid, folderUID: e.folderUID, title: e.title, useMonoFont: e.useMonoFont)
+        var dto = FileDTO(uid: e.uid, title: e.title, useMonoFont: e.useMonoFont)
 
         if let textFileBody = e.body as? TextFileBody {
             dto.textBody = try textBodySerializer.serialize(textFileBody)
@@ -62,7 +54,7 @@ class FileSerializer_v1: ISerializer {
     }
 
     func deserialize(data: Data) throws -> File {
-        let dto = try decoder.decode(FileDTO_v1.self, from: data)
+        let dto = try decoder.decode(FileDTO.self, from: data)
         var fileBody: FileBody?
 
         if let textBodyData = dto.textBody {
@@ -78,7 +70,7 @@ class FileSerializer_v1: ISerializer {
         }
 
         if let fileBody = fileBody {
-            return File(uid: dto.uid, folderUID: dto.folderUID, title: dto.title, body: fileBody, useMonoFont: dto.useMonoFont, dispatcher: dispatcher)
+            return File(uid: dto.uid, title: dto.title, body: fileBody, useMonoFont: dto.useMonoFont, dispatcher: dispatcher)
         } else {
             throw FileSerializerError.fileBodyNotFoundAfterDeserialization(details: "File uid = \(dto.uid), title: = \(dto.title)")
         }

@@ -26,7 +26,4 @@ class DomainEventDispatcher: EventDispatcher {
 
 enum BrainCacheDomainEvent {
     case entityStateChanged(entity: DomainEntity)
-    case filesFolderChanged(file: File)
-    case repoIsReady(repoID: RepoID)
-    case repoStoreComplete(repoID: RepoID)
 }

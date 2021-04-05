@@ -29,6 +29,10 @@ class FileSystemAPI {
     func getLogsUrl() -> URL {
         return projectURL.appendingPathComponent(StorageDirectory.logs.rawValue)
     }
+    
+    func getProjectUrl(ver: UInt) -> URL {
+        return projectURL.appendingPathComponent("v\(ver)")
+    }
 
     func getFilesUrl(ver: UInt) -> URL {
         return projectURL.appendingPathComponent("v\(ver)/\(StorageDirectory.files.rawValue)")
@@ -41,10 +45,19 @@ class FileSystemAPI {
     func getProjectContentURLs() throws -> [URL] {
         return try FileManager.default.contentsOfDirectory(at: projectURL, includingPropertiesForKeys: nil)
     }
-    
+
     func getLogsContentURLs(filesWithExtension: String) throws -> [URL] {
         let dirPath = StorageDirectory.logs.rawValue
         return try FileManager.default.contentsOfDirectory(at: projectURL.appendingPathComponent(dirPath), includingPropertiesForKeys: nil).filter { $0.pathExtension == filesWithExtension }
+    }
+
+    func existDir(url: URL) -> Bool {
+        var isDir: ObjCBool = true
+        return FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
+    }
+
+    func createDir(url: URL) throws {
+        try FileManager.default.createDirectory(atPath: url.path, withIntermediateDirectories: true, attributes: nil)
     }
 
     func existLogsDir() -> Bool {
@@ -60,8 +73,8 @@ class FileSystemAPI {
     func deleteFileToTrash(from url: URL) throws {
         try FileManager.default.trashItem(at: url, resultingItemURL: nil)
     }
-    
-    func copyContent(fromDir: URL, toDir:URL) throws {
+
+    func copyContent(fromDir: URL, toDir: URL) throws {
         try FileManager.default.copyItem(at: fromDir, to: toDir)
     }
 }

@@ -12,14 +12,13 @@ struct ListFileView: View {
     @ObservedObject private var lc: ListController
     @ObservedObject private var file: File
     private let fileBody: ListFileBody
-    @ObservedObject private var folder: Folder
+    @ObservedObject private var vm = FolderListVM.shared
     private let scrollerWidth: CGFloat = 15
     private let headerHeight: CGFloat = SizeConstants.listCellHeight
 
-    init(file: File, fileBody: ListFileBody, folder: Folder) {
+    init(file: File, fileBody: ListFileBody) {
         self.file = file
         self.fileBody = fileBody
-        self.folder = folder
         lc = ListController(list: fileBody)
     }
 
@@ -31,7 +30,7 @@ struct ListFileView: View {
             VScrollBar(uid: file.uid) {
                 HStack(alignment: .top, spacing: 0) {
                     ForEach(fileBody.columns, id: \.uid) { column in
-                        ListColumnCell(lc: lc, column: column, useMonoFont: file.useMonoFont, searchText: folder.search, width: column.ratio * (proxy.size.width - scrollerWidth), minHeight: proxy.size.height - SizeConstants.listCellHeight - headerHeight)
+                        ListColumnCell(lc: lc, column: column, useMonoFont: file.useMonoFont, searchText: vm.search, width: column.ratio * (proxy.size.width - scrollerWidth), minHeight: proxy.size.height - SizeConstants.listCellHeight - headerHeight)
                             .frame(width: column.ratio * (proxy.size.width - scrollerWidth))
                     }
                 }

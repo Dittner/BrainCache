@@ -12,14 +12,12 @@ struct TableFileView: View {
     @ObservedObject private var tc: TableController
     @ObservedObject private var file: File
     private let fileBody: TableFileBody
-    private let folder: Folder
     private let scrollerWidth: CGFloat = 15
 
-    init(file: File, fileBody: TableFileBody, folder: Folder) {
+    init(file: File, fileBody: TableFileBody) {
         print("TableContentView init, use mono font = \(file.useMonoFont)")
         self.file = file
         self.fileBody = fileBody
-        self.folder = folder
         tc = TableController(table: fileBody)
     }
 
