@@ -174,6 +174,8 @@ struct TextArea: NSViewRepresentable {
             let attributedStr = NSMutableAttributedString(string: str)
 
             attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: str.count))
+            attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: textColor, range: NSRange(location: 0, length: text.count))
+
 
             let style = getStyle()
 
@@ -184,13 +186,11 @@ struct TextArea: NSViewRepresentable {
             if !highlightedText.isEmpty {
                 let ranges = str.ranges(of: highlightedText, options: .caseInsensitive)
                 for r in ranges {
-                    attributedStr.addAttribute(NSAttributedString.Key.backgroundColor, value: Colors.textHighlightBG, range: NSRange(r, in: highlightedText))
+                    attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
                 }
             }
 
             textArea.textStorage?.setAttributedString(attributedStr)
-            textArea.font = font
-            textArea.textColor = textColor
         }
 
         updateHeight(textArea)
@@ -306,6 +306,7 @@ struct NSTextEditor: NSViewControllerRepresentable {
         let attributedStr = NSMutableAttributedString(string: text)
 
         attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: text.count))
+        attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: textColor, range: NSRange(location: 0, length: text.count))
 
         let style = getStyle()
 
@@ -316,14 +317,11 @@ struct NSTextEditor: NSViewControllerRepresentable {
         if !highlightedText.isEmpty {
             let ranges = text.ranges(of: highlightedText, options: .caseInsensitive)
             for r in ranges {
-                attributedStr.addAttribute(NSAttributedString.Key.backgroundColor, value: Colors.textHighlightBG, range: NSRange(r, in: highlightedText))
+                attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
             }
         }
-
+        
         textView.textStorage?.setAttributedString(attributedStr)
-
-        textView.font = font
-        textView.textColor = textColor
     }
 
     func getStyle() -> NSMutableParagraphStyle {
@@ -387,7 +385,6 @@ struct EditableText: View {
         self.countClickActivation = countClickActivation
         self.action = action
         font = NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize)
-        //notifier.editingText = ""
     }
 
     var body: some View {
@@ -404,7 +401,6 @@ struct EditableText: View {
                 }, onFocusChangedAction: { hasFocus in
                     if notifier.isEditing && !hasFocus {
                         notifier.isEditing = false
-                        //notifier.editingText = ""
                     }
                 }).padding(.leading, SizeConstants.padding - 2)
                     .frame(width: proxy.size.width, height: proxy.size.height)
@@ -441,6 +437,7 @@ struct EditableMultilineText: View {
     let width: CGFloat
     let useMonoFont: Bool
     let searchText: String
+    let hasSearchMatches: Bool
     let action: (String) -> Void
 
     init(_ text: String, uid: UID, alignment: Alignment = .leading, width: CGFloat, useMonoFont: Bool = false, searchText: String = "", action: @escaping (String) -> Void) {
@@ -450,13 +447,14 @@ struct EditableMultilineText: View {
         self.width = width
         self.useMonoFont = useMonoFont
         self.searchText = searchText
+        self.hasSearchMatches = searchText.count > 0 ? text.hasSubstring(searchText) : false
         self.action = action
     }
 
     var body: some View {
         if textManager.ownerUID == uid {
             VStack(alignment: .trailing, spacing: 2) {
-                TextArea(text: $textManager.editingText, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight)
+                TextArea(text: $textManager.editingText, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: "", lineHeight: SizeConstants.fontLineHeight)
                     .colorScheme(.dark)
                     .offset(x: -5)
                     .padding(.horizontal, SizeConstants.padding)
@@ -480,7 +478,9 @@ struct EditableMultilineText: View {
             }.frame(width: width - 1)
 
         } else {
-            Text(self.text)
+            
+            HighlightedText(self.text, matching: self.searchText)
+                        
                 .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
                 .padding(.vertical, 5)
                 .padding(.horizontal, SizeConstants.padding)
@@ -500,6 +500,38 @@ struct EditableMultilineText: View {
     }
 }
 
+struct HighlightedText: View {
+    let text: String
+    let matching: String
+    let caseSensitive: Bool
+
+    init(_ text: String, matching: String, caseSensitive: Bool = false) {
+        self.text = text
+        self.matching = matching
+        self.caseSensitive = caseSensitive
+    }
+
+    var body: some View {
+        guard  let regex = try? NSRegularExpression(pattern: NSRegularExpression.escapedPattern(for: matching).trimmingCharacters(in: .whitespacesAndNewlines).folding(options: .regularExpression, locale: .current), options: caseSensitive ? .init() : .caseInsensitive) else {
+            return Text(text)
+        }
+
+        let range = NSRange(location: 0, length: text.count)
+        let matches = regex.matches(in: text, options: .withTransparentBounds, range: range)
+
+        return text.enumerated().map { (char) -> Text in
+            guard matches.filter( {
+                $0.range.contains(char.offset)
+            }).count == 0 else {
+                return Text( String(char.element) ).foregroundColor(Colors.textHighlight.color)
+            }
+            return Text( String(char.element) )
+
+        }.reduce(Text("")) { (a, b) -> Text in
+            return a + b
+        }
+    }
+}
 
 
 class HeightDidChangeNotifier: ObservableObject {

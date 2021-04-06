@@ -9,6 +9,7 @@ import Combine
 import SwiftUI
 
 struct TableFileView: View {
+    @ObservedObject private var vm = FolderListVM.shared
     @ObservedObject private var tc: TableController
     @ObservedObject private var file: File
     private let fileBody: TableFileBody
@@ -47,7 +48,7 @@ struct TableFileView: View {
                                 .frame(width: SizeConstants.tableRowNumberWidth, alignment: .trailing)
 
                             ForEach(row.cells.enumeratedArray(), id: \.offset) { index, cell in
-                                EditableMultilineText(cell.text, uid: cell.uid, alignment: .leading, width: getCellWidth(header: fileBody.headers[index], rootWidth: root.size.width), useMonoFont: file.useMonoFont) { value in
+                                EditableMultilineText(cell.text, uid: cell.uid, alignment: .leading, width: getCellWidth(header: fileBody.headers[index], rootWidth: root.size.width), useMonoFont: file.useMonoFont, searchText: vm.search) { value in
                                     self.tc.updateCell(cell, text: value)
                                 }
                                 .offset(x: 1, y: 1)
@@ -57,6 +58,8 @@ struct TableFileView: View {
                         }
                         HSeparatorView()
                     }
+                    
+                    Spacer().frame(maxWidth: .infinity, maxHeight: 1)
 
                     TextButton(text: "Add Row", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
                         self.tc.addTableRow()

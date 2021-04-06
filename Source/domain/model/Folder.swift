@@ -26,19 +26,6 @@ class Folder: DomainEntity, ObservableObject {
         super.init(uid: uid, dispatcher: dispatcher)
     }
 
-    func initWith(selectedFile: File?) {
-        self.selectedFile = selectedFile
-    }
-
-    func initWith(files: [File]) {
-        self.files = files
-        resortFiles()
-    }
-
-    func initWith(folders: [Folder]) {
-        self.folders = folders
-    }
-
     private func resortFiles() {
         files = files.sorted(by: { $0.title < $1.title })
     }
@@ -94,7 +81,7 @@ class Folder: DomainEntity, ObservableObject {
             notifyStateDidChange()
         }
     }
-    
+
     func update(isOpened: Bool) {
         if self.isOpened != isOpened {
             self.isOpened = isOpened
@@ -103,8 +90,10 @@ class Folder: DomainEntity, ObservableObject {
     }
 
     func update(parent: Folder?) {
-        self.parent = parent
-        notifyStateDidChange()
+        if self.parent != parent {
+            self.parent = parent
+            notifyStateDidChange()
+        }
     }
 
     static func createFolder() -> Folder {
