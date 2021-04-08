@@ -14,11 +14,13 @@ struct FileListView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             FileHeaderList(dragProcessor: vm.fileToFolderDragProcessor)
+                .zIndex(2)
 
             HSeparatorView()
 
             if let folder = vm.selectedFolder {
                 FileBodyView(folder: folder)
+                    .zIndex(1)
             } else {
                 Spacer()
             }
@@ -82,7 +84,6 @@ struct FileHeaderList: View {
 
             }.frame(width: proxy.size.width, height: SizeConstants.appHeaderHeight, alignment: .leading)
                 .background(Colors.black01.color)
-                .zIndex(1)
         }.frame(height: SizeConstants.appHeaderHeight, alignment: .leading)
     }
 }

@@ -164,7 +164,7 @@ struct TextArea: NSViewRepresentable {
     }
 
     func updateNSView(_ textArea: CustomNSTextView, context: Context) {
-        //need update parent, otherwise will be updated text from prev binding
+        // need update parent, otherwise will be updated text from prev binding
         context.coordinator.parent = self
         let str = context.coordinator.bufferText ?? text
         if textArea.string != str || textArea.curHighlightedText != highlightedText || textArea.font != font {
@@ -175,7 +175,6 @@ struct TextArea: NSViewRepresentable {
 
             attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: str.count))
             attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: textColor, range: NSRange(location: 0, length: text.count))
-
 
             let style = getStyle()
 
@@ -195,7 +194,7 @@ struct TextArea: NSViewRepresentable {
 
         updateHeight(textArea)
     }
-    
+
     func updateHeight(_ textArea: CustomNSTextView) {
         textArea.textContainer?.containerSize.width = width
         let updatedHeight = textArea.contentSize.height
@@ -320,7 +319,7 @@ struct NSTextEditor: NSViewControllerRepresentable {
                 attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
             }
         }
-        
+
         textView.textStorage?.setAttributedString(attributedStr)
     }
 
@@ -363,12 +362,16 @@ struct NSTextEditor: NSViewControllerRepresentable {
 class EditableTextManager: ObservableObject {
     static var shared: EditableTextManager = EditableTextManager()
     var ownerUID: UID = UID()
-    @Published var editingText: String = ""
     @Published var isEditing: Bool = false
 }
 
+class TextBuffer: ObservableObject {
+    @Published var text: String = ""
+}
+
 struct EditableText: View {
-    @ObservedObject private var notifier = EditableTextManager.shared
+    @ObservedObject private var textManager = EditableTextManager.shared
+    @ObservedObject private var textBuffer = TextBuffer()
     let text: String
     let uid: UID
     let alignment: Alignment
@@ -389,26 +392,26 @@ struct EditableText: View {
 
     var body: some View {
         GeometryReader { proxy in
-            if notifier.isEditing && notifier.ownerUID == uid {
+            if textManager.isEditing && textManager.ownerUID == uid {
                 RoundedRectangle(cornerRadius: 2)
                     .stroke(Colors.focus.color)
                     .frame(width: proxy.size.width - 3, height: proxy.size.height - 2)
                     .offset(x: 1, y: 0)
 
-                TextInput(title: "", text: $notifier.editingText, textColor: Colors.text, font: font, alignment: .left, isFocused: notifier.isEditing && notifier.ownerUID == uid, isSecure: false, format: nil, isEditable: notifier.isEditing && notifier.ownerUID == uid, onEnterAction: {
-                    action(notifier.editingText)
-                    notifier.isEditing = false
+                TextInput(title: "", text: $textBuffer.text, textColor: Colors.text, font: font, alignment: .left, isFocused: textManager.isEditing && textManager.ownerUID == uid, isSecure: false, format: nil, isEditable: textManager.isEditing && textManager.ownerUID == uid, onEnterAction: {
+                    action(textBuffer.text)
+                    textManager.isEditing = false
                 }, onFocusChangedAction: { hasFocus in
-                    if notifier.isEditing && !hasFocus {
-                        notifier.isEditing = false
+                    if textManager.isEditing && !hasFocus {
+                        textManager.isEditing = false
                     }
                 }).padding(.leading, SizeConstants.padding - 2)
                     .frame(width: proxy.size.width, height: proxy.size.height)
                     .contentShape(Rectangle())
                     .onTapGesture(count: countClickActivation) {
-                        notifier.editingText = text
-                        notifier.ownerUID = uid
-                        notifier.isEditing = true
+                        textBuffer.text = text
+                        textManager.ownerUID = uid
+                        textManager.isEditing = true
                     }
 
             } else {
@@ -419,9 +422,9 @@ struct EditableText: View {
                     .frame(width: proxy.size.width, height: proxy.size.height, alignment: alignment)
                     .contentShape(Rectangle())
                     .onTapGesture(count: countClickActivation) {
-                        notifier.editingText = text
-                        notifier.ownerUID = uid
-                        notifier.isEditing = true
+                        textBuffer.text = text
+                        textManager.ownerUID = uid
+                        textManager.isEditing = true
                     }
             }
         }
@@ -430,8 +433,9 @@ struct EditableText: View {
 
 struct EditableMultilineText: View {
     @ObservedObject private var textManager = EditableTextManager.shared
+    private var textBuffer = TextBuffer()
     @ObservedObject private var notifier = HeightDidChangeNotifier()
-    let text: String
+    
     let uid: UID
     let alignment: Alignment
     let width: CGFloat
@@ -441,25 +445,28 @@ struct EditableMultilineText: View {
     let action: (String) -> Void
 
     init(_ text: String, uid: UID, alignment: Alignment = .leading, width: CGFloat, useMonoFont: Bool = false, searchText: String = "", action: @escaping (String) -> Void) {
-        self.text = text
+        print("EditableMultilineText init, uid = \(uid)")
+        self.textBuffer.text = text
         self.uid = uid
         self.alignment = alignment
         self.width = width
         self.useMonoFont = useMonoFont
         self.searchText = searchText
-        self.hasSearchMatches = searchText.count > 0 ? text.hasSubstring(searchText) : false
+        hasSearchMatches = searchText.count > 0 ? text.hasSubstring(searchText) : false
         self.action = action
     }
 
     var body: some View {
         if textManager.ownerUID == uid {
             VStack(alignment: .trailing, spacing: 2) {
-                TextArea(text: $textManager.editingText, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: "", lineHeight: SizeConstants.fontLineHeight)
-                    .colorScheme(.dark)
-                    .offset(x: -5)
-                    .padding(.horizontal, SizeConstants.padding)
-                    .frame(height: max(SizeConstants.listCellHeight - 1, notifier.height - 1))
-                    .border(Colors.focus.color)
+                TextArea(text: textBuffer.text, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: "", lineHeight: SizeConstants.fontLineHeight) { text in
+                    self.textBuffer.text = text
+                }
+                .colorScheme(.dark)
+                .offset(x: -6)
+                .padding(.horizontal, SizeConstants.padding)
+                .frame(height: max(SizeConstants.listCellHeight - 1, notifier.height - 1))
+                .border(Colors.focus.color)
 
                 HStack(alignment: .center, spacing: 2) {
                     TextButton(text: width < 100 ? "C" : "Cancel", textColor: Colors.appBG.color, bgColor: Colors.focus.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
@@ -469,18 +476,17 @@ struct EditableMultilineText: View {
                     .cornerRadius(2)
 
                     TextButton(text: width < 100 ? "S" : "Save", textColor: Colors.appBG.color, bgColor: Colors.focus.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), height: SizeConstants.listCellHeight, padding: 5) {
-                        action(textManager.editingText)
+                        action(textBuffer.text)
                         textManager.isEditing = false
                         textManager.ownerUID = UID()
                     }
                     .cornerRadius(2)
                 }
-            }.frame(width: width - 1)
+            }.padding(1)
+                .frame(width: width)
 
         } else {
-            
-            HighlightedText(self.text, matching: self.searchText)
-                        
+            MarkableText(self.textBuffer.text, matching: self.searchText)
                 .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
                 .padding(.vertical, 5)
                 .padding(.horizontal, SizeConstants.padding)
@@ -492,10 +498,99 @@ struct EditableMultilineText: View {
                 .multilineTextAlignment(.leading)
                 .contentShape(Rectangle())
                 .onTapGesture(count: 2) {
-                    textManager.editingText = text
                     textManager.ownerUID = uid
                     textManager.isEditing = true
                 }
+        }
+    }
+}
+
+enum StringMark: Int {
+    case comment = 0
+    case search = 1
+    case text = 2
+}
+
+struct MarkableString {
+    let text: String
+    let mark: StringMark
+}
+
+struct MarkableText: View {
+    let text: [MarkableString]
+    let matching: String
+    let caseSensitive: Bool = false
+
+    init(_ text: String, matching: String) {
+        var sentences: [MarkableString] = []
+        var s: String = ""
+        var isCommenting: Bool = false
+
+        var matchingBuffer: String = ""
+        let searchText = matching.lowercased()
+        for (index, char) in text.lowercased().enumerated() {
+            if char == "#" && !isCommenting {
+                isCommenting = true
+                if matchingBuffer.count > 0 {
+                    s.append(matchingBuffer)
+                }
+                if s.count > 0 {
+                    sentences.append(MarkableString(text: s, mark: .text))
+                    s = ""
+                    matchingBuffer = ""
+                }
+                s.append(text[index])
+            } else if char == "\n" && isCommenting {
+                isCommenting = false
+                if s.count > 0 {
+                    sentences.append(MarkableString(text: s, mark: .comment))
+                    s = ""
+                    matchingBuffer = ""
+                }
+                s.append(text[index])
+            } else if searchText.count > 0 && char == searchText[matchingBuffer.count] {
+                matchingBuffer.append(text[index])
+                if searchText.count > 0 && matchingBuffer.count == searchText.count {
+                    sentences.append(MarkableString(text: s, mark: isCommenting ? .comment : .text))
+                    sentences.append(MarkableString(text: matchingBuffer, mark: .search))
+                    matchingBuffer = ""
+                    s = ""
+                }
+
+            } else if matchingBuffer.count > 0 {
+                s.append(matchingBuffer)
+                s.append(text[index])
+                matchingBuffer = ""
+            } else {
+                s.append(text[index])
+            }
+        }
+        if matchingBuffer.count > 0 {
+            s.append(matchingBuffer)
+        }
+        if s.count > 0 {
+            sentences.append(MarkableString(text: s, mark: isCommenting ? .comment : .text))
+        }
+
+        self.text = sentences
+        self.matching = matching
+    }
+
+    var body: some View {
+        if text.count > 0 {
+            return text.map { (str) -> Text in
+                if str.text.count > 0 && str.mark == .search {
+                    return Text(str.text).foregroundColor(Colors.textHighlight.color)
+                } else if str.text.count > 0 && str.mark == .comment {
+                    return Text(str.text).foregroundColor(Colors.comment.color)
+                } else {
+                    return Text(str.text)
+                }
+            }.reduce(Text("")) { (a, b) -> Text in
+                a + b
+            }
+        } else {
+            return Text("")
         }
     }
 }
@@ -512,7 +607,8 @@ struct HighlightedText: View {
     }
 
     var body: some View {
-        guard  let regex = try? NSRegularExpression(pattern: NSRegularExpression.escapedPattern(for: matching).trimmingCharacters(in: .whitespacesAndNewlines).folding(options: .regularExpression, locale: .current), options: caseSensitive ? .init() : .caseInsensitive) else {
+        guard let regex = try? NSRegularExpression(pattern: NSRegularExpression.escapedPattern(for: matching).trimmingCharacters(in: .whitespacesAndNewlines).folding(options: .regularExpression, locale: .current), options: caseSensitive ? .init() : .caseInsensitive)
+        else {
             return Text(text)
         }
 
@@ -520,19 +616,17 @@ struct HighlightedText: View {
         let matches = regex.matches(in: text, options: .withTransparentBounds, range: range)
 
         return text.enumerated().map { (char) -> Text in
-            guard matches.filter( {
-                $0.range.contains(char.offset)
-            }).count == 0 else {
-                return Text( String(char.element) ).foregroundColor(Colors.textHighlight.color)
-            }
-            return Text( String(char.element) )
+            if matches.filter({ $0.range.contains(char.offset) }).count > 0 {
+                return Text(String(char.element)).foregroundColor(Colors.textHighlight.color)
 
+            } else {
+                return Text(String(char.element))
+            }
         }.reduce(Text("")) { (a, b) -> Text in
-            return a + b
+            a + b
         }
     }
 }
-
 
 class HeightDidChangeNotifier: ObservableObject {
     @Published var height: CGFloat = 0

@@ -65,7 +65,7 @@ extension String {
     }
 
     /*
-     "string_id".localized
+     "string_id".localize
      */
 
     var localized: String {

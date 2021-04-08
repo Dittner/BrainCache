@@ -172,9 +172,7 @@ struct ListLinesView: View {
 struct ColumnLineView: View {
     var body: some View {
         ZStack {
-            Color.white.opacity(0.1)
-                .frame(width: 1)
-                .frame(maxHeight: .infinity)
+            VSeparatorView()
 
             Colors.clear.color
                 .frame(width: 10)
