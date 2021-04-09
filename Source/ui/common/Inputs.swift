@@ -6,6 +6,7 @@
 //  Copyright © 2020 Alexander Dittner. All rights reserved.
 //
 
+import Combine
 import SwiftUI
 
 extension NSTextField {
@@ -105,7 +106,6 @@ struct TextArea: NSViewRepresentable {
     let font: NSFont
     let highlightedText: String
     let lineHeight: CGFloat?
-    let action: ((String) -> Void)?
 
     init(text: Binding<String>, height: Binding<CGFloat>, width: CGFloat, textColor: NSColor, font: NSFont, highlightedText: String, lineHeight: CGFloat? = nil) {
         _text = text
@@ -115,18 +115,6 @@ struct TextArea: NSViewRepresentable {
         self.font = font
         self.highlightedText = highlightedText
         self.lineHeight = lineHeight
-        action = nil
-    }
-
-    init(text: String, height: Binding<CGFloat>, width: CGFloat, textColor: NSColor, font: NSFont, highlightedText: String, lineHeight: CGFloat? = nil, action: @escaping (String) -> Void) {
-        _text = Binding.constant(text)
-        _height = height
-        self.width = width
-        self.textColor = textColor
-        self.font = font
-        self.highlightedText = highlightedText
-        self.lineHeight = lineHeight
-        self.action = action
     }
 
     func makeCoordinator() -> Coordinator {
@@ -166,30 +154,42 @@ struct TextArea: NSViewRepresentable {
     func updateNSView(_ textArea: CustomNSTextView, context: Context) {
         // need update parent, otherwise will be updated text from prev binding
         context.coordinator.parent = self
-        let str = context.coordinator.bufferText ?? text
-        if textArea.string != str || textArea.curHighlightedText != highlightedText || textArea.font != font {
+        if textArea.curHighlightedText != highlightedText {
             textArea.curHighlightedText = highlightedText
-            textArea.string = str
+        }
 
-            let attributedStr = NSMutableAttributedString(string: str)
+        if textArea.string != text {
+            textArea.string = text
+        }
 
-            attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: str.count))
-            attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: textColor, range: NSRange(location: 0, length: text.count))
+        if textArea.font != font {
+            textArea.font = font
+        }
 
-            let style = getStyle()
+        textArea.textStorage?.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: text.count))
+        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: textColor, range: NSRange(location: 0, length: text.count))
 
-            attributedStr.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: NSRange(location: 0, length: str.count))
+        let style = getStyle()
 
-            textArea.defaultParagraphStyle = style
+        textArea.textStorage?.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: NSRange(location: 0, length: text.count))
 
-            if !highlightedText.isEmpty {
-                let ranges = str.ranges(of: highlightedText, options: .caseInsensitive)
-                for r in ranges {
-                    attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
-                }
+        textArea.defaultParagraphStyle = style
+
+        if !highlightedText.isEmpty {
+            let ranges = text.ranges(of: highlightedText, options: .caseInsensitive)
+            for r in ranges {
+                textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
             }
+        }
 
-            textArea.textStorage?.setAttributedString(attributedStr)
+        if text.count > 2, let regex = try? NSRegularExpression(pattern: "#.*\n", options: .caseInsensitive) {
+            let t = text.substring(to: text.count - 1) + "\n"
+            let nsString = t as NSString
+            let results = regex.matches(in: t, options: [], range: NSMakeRange(0, nsString.length))
+            results.forEach { result in
+                let r = result.range
+                textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.comment, range: r)
+            }
         }
 
         updateHeight(textArea)
@@ -205,7 +205,6 @@ struct TextArea: NSViewRepresentable {
 
     class Coordinator: NSObject, NSTextViewDelegate {
         var parent: TextArea
-        var bufferText: String?
 
         init(_ textArea: TextArea) {
             parent = textArea
@@ -217,14 +216,7 @@ struct TextArea: NSViewRepresentable {
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? CustomNSTextView else { return }
-
-            if parent.action != nil {
-                bufferText = textView.string
-                parent.action?(textView.string)
-                parent.updateHeight(textView)
-            } else {
-                parent.text = textView.string
-            }
+            parent.text = textView.string
         }
 
         func textView(_ textView: NSTextView, willChangeSelectionFromCharacterRange oldSelectedCharRange: NSRange, toCharacterRange newSelectedCharRange: NSRange) -> NSRange {
@@ -432,10 +424,9 @@ struct EditableText: View {
 }
 
 struct EditableMultilineText: View {
-    @ObservedObject private var textManager = EditableTextManager.shared
-    private var textBuffer = TextBuffer()
+    @ObservedObject private var textBuffer = TextBuffer()
     @ObservedObject private var notifier = HeightDidChangeNotifier()
-    
+
     let uid: UID
     let alignment: Alignment
     let width: CGFloat
@@ -444,9 +435,10 @@ struct EditableMultilineText: View {
     let hasSearchMatches: Bool
     let action: (String) -> Void
 
+    private var subscription: AnyCancellable?
+
     init(_ text: String, uid: UID, alignment: Alignment = .leading, width: CGFloat, useMonoFont: Bool = false, searchText: String = "", action: @escaping (String) -> Void) {
         print("EditableMultilineText init, uid = \(uid)")
-        self.textBuffer.text = text
         self.uid = uid
         self.alignment = alignment
         self.width = width
@@ -454,54 +446,20 @@ struct EditableMultilineText: View {
         self.searchText = searchText
         hasSearchMatches = searchText.count > 0 ? text.hasSubstring(searchText) : false
         self.action = action
+        textBuffer.text = text
+
+        subscription = textBuffer.$text
+            .dropFirst()
+            .removeDuplicates()
+            .sink { value in
+                action(value)
+            }
     }
 
     var body: some View {
-        if textManager.ownerUID == uid {
-            VStack(alignment: .trailing, spacing: 2) {
-                TextArea(text: textBuffer.text, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: "", lineHeight: SizeConstants.fontLineHeight) { text in
-                    self.textBuffer.text = text
-                }
-                .colorScheme(.dark)
-                .offset(x: -6)
-                .padding(.horizontal, SizeConstants.padding)
-                .frame(height: max(SizeConstants.listCellHeight - 1, notifier.height - 1))
-                .border(Colors.focus.color)
-
-                HStack(alignment: .center, spacing: 2) {
-                    TextButton(text: width < 100 ? "C" : "Cancel", textColor: Colors.appBG.color, bgColor: Colors.focus.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
-                        textManager.isEditing = false
-                        textManager.ownerUID = UID()
-                    }
-                    .cornerRadius(2)
-
-                    TextButton(text: width < 100 ? "S" : "Save", textColor: Colors.appBG.color, bgColor: Colors.focus.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), height: SizeConstants.listCellHeight, padding: 5) {
-                        action(textBuffer.text)
-                        textManager.isEditing = false
-                        textManager.ownerUID = UID()
-                    }
-                    .cornerRadius(2)
-                }
-            }.padding(1)
-                .frame(width: width)
-
-        } else {
-            MarkableText(self.textBuffer.text, matching: self.searchText)
-                .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
-                .padding(.vertical, 5)
-                .padding(.horizontal, SizeConstants.padding)
-                .frame(maxHeight: .infinity, alignment: alignment)
-                .frame(width: width, alignment: alignment)
-                .lineLimit(nil)
-                .lineSpacing(5)
-                .fixedSize(horizontal: false, vertical: true)
-                .multilineTextAlignment(.leading)
-                .contentShape(Rectangle())
-                .onTapGesture(count: 2) {
-                    textManager.ownerUID = uid
-                    textManager.isEditing = true
-                }
-        }
+        TextArea(text: $textBuffer.text, height: $notifier.height, width: width - SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight)
+            .colorScheme(.dark)
+            .frame(width: width - SizeConstants.padding, height: max(SizeConstants.listCellHeight, notifier.height))
     }
 }
 

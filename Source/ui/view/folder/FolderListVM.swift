@@ -6,7 +6,7 @@
 //
 
 import Combine
-import Foundation
+import SwiftUI
 
 class FolderListVM: ObservableObject {
     static var shared: FolderListVM = FolderListVM()
@@ -53,6 +53,12 @@ class FolderListVM: ObservableObject {
             .flatMap { $0.$files }
             .sink { files in
                 self.files = files.sorted(by: { $0.title < $1.title })
+            }.store(in: &disposeBag)
+
+        $selectedFile
+            .compactMap { $0 }
+            .sink { _ in
+                (NSApplication.shared.delegate as! AppDelegate).window?.makeFirstResponder(nil)
             }.store(in: &disposeBag)
     }
 

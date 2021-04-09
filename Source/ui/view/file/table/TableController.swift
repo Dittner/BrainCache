@@ -22,6 +22,7 @@ class TableController: ObservableObject {
         tableHeaderDragProcessor = TableHeaderDragProcessor(table)
         updateGridlines()
         table.stateDidChange
+            .filter{ $0 != .tableText}
             .sink { _ in
                 self.updateGridlines()
                 self.updateGridView()

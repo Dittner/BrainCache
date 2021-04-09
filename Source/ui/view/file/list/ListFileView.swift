@@ -108,13 +108,15 @@ struct ListHeaderView: View {
 struct ListColumnCell: View {
     private let lc: ListController
     private let column: ListColumn
+    @ObservedObject private var textBuffer = TextBuffer()
     @ObservedObject private var notifier = HeightDidChangeNotifier()
     let useMonoFont: Bool
     let searchText: String
     let font: NSFont
     let width: CGFloat
     let minHeight: CGFloat
-
+    private var subscription: AnyCancellable?
+    
     init(lc: ListController, column: ListColumn, useMonoFont: Bool, searchText: String, width: CGFloat, minHeight: CGFloat) {
         self.lc = lc
         self.column = column
@@ -123,12 +125,18 @@ struct ListColumnCell: View {
         self.width = width
         self.minHeight = minHeight
         font = NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize)
+        
+        textBuffer.text = column.text
+        subscription = textBuffer.$text
+            .dropFirst()
+            .removeDuplicates()
+            .sink { value in
+                lc.updateColumn(column, text: value)
+            }
     }
 
     var body: some View {
-        TextArea(text: column.text, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: font, highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight) { text in
-            self.lc.updateColumn(column, text: text)
-        }
+        TextArea(text: $textBuffer.text, height: $notifier.height, width: width - 2 * SizeConstants.padding, textColor: Colors.text, font: font, highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight)
         .colorScheme(.dark)
         .offset(x: -4, y: -2)
         .padding(.horizontal, SizeConstants.padding)
