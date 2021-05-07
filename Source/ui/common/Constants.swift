@@ -13,6 +13,7 @@ public struct Colors {
     static let folderListBG = [Color(rgb: 0x323436), Color(rgb: 0x414346)]
     
     static let textDark = NSColor(rgb: 0x90959b)
+    static let textBlack = NSColor(rgb: 0x4a4d4f)
     static let textLight = NSColor(rgb: 0xe9f0f9)
     static let text = NSColor(rgb: 0xd0d7df)
     static let comment = NSColor(rgb: 0x687f7b)
@@ -24,6 +25,7 @@ public struct Colors {
     
     static let textHighlight = NSColor(rgb: 0xd099ff)
     static let focus = NSColor(rgb: 0x6baffd)
+    static let header = NSColor(rgb: 0x74c1c1)
     static let button = NSColor(rgb: 0xa29cbd)
 }
 

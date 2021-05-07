@@ -46,7 +46,7 @@ class File: DomainEntity, ObservableObject {
     @Published private(set) var title: String
     @Published private(set) var useMonoFont: Bool
     let body: FileBody
-    private(set) var parent: Folder?
+    private(set) weak var parent: Folder?
 
     private var disposeBag: Set<AnyCancellable> = []
     init(uid: UID, title: String, body: FileBody, useMonoFont: Bool, dispatcher: DomainEventDispatcher) {

@@ -44,7 +44,7 @@ class Migration {
             for url: URL in urls {
                 let attributes: URLResourceValues = try url.resourceValues(forKeys: [.isDirectoryKey, .nameKey])
                 if attributes.isDirectory ?? false, let dirName = attributes.name {
-                    let matches = dirName.firstMatch(regex: "v([0-9]+)")
+                    let matches = dirName.firstMatch(regex: "^v([0-9]+)")
                     if matches.count > 1, let verNum = UInt(matches[1]) {
                         res = verNum > res ? verNum : res
                     }

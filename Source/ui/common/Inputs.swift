@@ -182,13 +182,22 @@ struct TextArea: NSViewRepresentable {
             }
         }
 
-        if text.count > 2, let regex = try? NSRegularExpression(pattern: "#.*\n", options: .caseInsensitive) {
+        if text.count > 2, let regex = try? NSRegularExpression(pattern: "#(#| )+.*\n", options: .caseInsensitive) {
             let t = text.substring(to: text.count - 1) + "\n"
             let nsString = t as NSString
             let results = regex.matches(in: t, options: [], range: NSMakeRange(0, nsString.length))
             results.forEach { result in
                 let r = result.range
-                textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.comment, range: r)
+                if r.length > 1 {
+                    let tag = text[r.location + 1 ... r.location + 1]
+                    if tag == "#" {
+                        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textBlack, range: NSRange(location: r.location, length: 2))
+                        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.header, range: NSRange(location: r.location + 2, length: r.length - 2))
+                    } else if tag == " " {
+                        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textBlack, range: NSRange(location: r.location, length: 1))
+                        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.comment, range: NSRange(location: r.location + 1, length: r.length - 1))
+                    }
+                }
             }
         }
 
@@ -225,36 +234,6 @@ struct TextArea: NSViewRepresentable {
     }
 }
 
-class EditorController: NSViewController {
-    var textView = CustomNSTextView()
-    var scroller: NSScrollView?
-
-    override func loadView() {
-        let scrollView = NSScrollView()
-        scroller = scrollView
-        scrollView.hasVerticalScroller = true
-        scrollView.backgroundColor = .clear
-        scrollView.contentView.backgroundColor = .clear
-        scrollView.drawsBackground = false
-        scrollView.autohidesScrollers = true
-
-        textView.autoresizingMask = [.width]
-        textView.backgroundColor = .clear
-        textView.allowsUndo = true
-        textView.isSelectable = true
-        textView.isEditable = true
-        textView.string = "Ag"
-
-        scrollView.documentView = textView
-
-        view = scrollView
-    }
-
-    override func viewDidAppear() {
-        view.window?.makeFirstResponder(view)
-    }
-}
-
 class CustomNSTextView: NSTextView {
     var curHighlightedText: String = ""
 
@@ -269,85 +248,6 @@ class CustomNSTextView: NSTextView {
 
         layoutManager.ensureLayout(for: textContainer)
         return layoutManager.usedRect(for: textContainer).size
-    }
-}
-
-struct NSTextEditor: NSViewControllerRepresentable {
-    @Binding var text: String
-    var font: NSFont
-    let textColor: NSColor
-    var lineHeight: CGFloat? = nil
-    let highlightedText: String
-
-    func makeCoordinator() -> Coordinator {
-        return Coordinator(self)
-    }
-
-    func makeNSViewController(context: Context) -> EditorController {
-        let vc = EditorController()
-        vc.textView.delegate = context.coordinator
-        return vc
-    }
-
-    func updateNSViewController(_ nsViewController: EditorController, context: Context) {
-        let textView = nsViewController.textView
-        textView.curHighlightedText = highlightedText
-        textView.string = text
-
-        let attributedStr = NSMutableAttributedString(string: text)
-
-        attributedStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: text.count))
-        attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: textColor, range: NSRange(location: 0, length: text.count))
-
-        let style = getStyle()
-
-        attributedStr.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: NSRange(location: 0, length: text.count))
-
-        textView.defaultParagraphStyle = style
-
-        if !highlightedText.isEmpty {
-            let ranges = text.ranges(of: highlightedText, options: .caseInsensitive)
-            for r in ranges {
-                attributedStr.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
-            }
-        }
-
-        textView.textStorage?.setAttributedString(attributedStr)
-    }
-
-    func getStyle() -> NSMutableParagraphStyle {
-        let style = NSMutableParagraphStyle()
-        style.alignment = .left
-        style.firstLineHeadIndent = 0
-        style.lineBreakMode = .byWordWrapping
-
-        if let lineHeight = lineHeight {
-            style.minimumLineHeight = lineHeight
-            style.maximumLineHeight = lineHeight
-        }
-
-        return style
-    }
-
-    class Coordinator: NSObject, NSTextViewDelegate {
-        var parent: NSTextEditor
-
-        init(_ parent: NSTextEditor) {
-            self.parent = parent
-        }
-
-        func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
-            return true
-        }
-
-        func textDidChange(_ notification: Notification) {
-            guard let textView = notification.object as? NSTextView else { return }
-            parent.text = textView.string
-        }
-
-        func textView(_ textView: NSTextView, willChangeSelectionFromCharacterRange oldSelectedCharRange: NSRange, toCharacterRange newSelectedCharRange: NSRange) -> NSRange {
-            return newSelectedCharRange
-        }
     }
 }
 
