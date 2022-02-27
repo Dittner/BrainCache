@@ -41,7 +41,7 @@ struct TableFileView: View {
                         HStack(alignment: .top, spacing: 0) {
                             Text("\(rowIndex + 1)")
                                 .lineLimit(1)
-                                .font(Font.custom(file.useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
+                                .font(Font.custom(file.useMonoFont ? .mono : .def, size: SizeConstants.fontSize))
                                 .foregroundColor(Colors.textDark.color)
                                 .padding(.horizontal, SizeConstants.padding)
                                 .padding(.top, 5)
@@ -54,7 +54,7 @@ struct TableFileView: View {
                                 .foregroundColor(Colors.text.color)
                                 .frame(width: getCellWidth(header: fileBody.headers[index], rootWidth: root.size.width))
                             }
-                        }
+                        }.offset(y: -3)
                         HSeparatorView()
                     }
                     

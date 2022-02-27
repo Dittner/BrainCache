@@ -279,7 +279,7 @@ struct EditableText: View {
         self.useMonoFont = useMonoFont
         self.countClickActivation = countClickActivation
         self.action = action
-        font = NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize)
+        font = NSFont(name: useMonoFont ? .mono : .def, size: SizeConstants.fontSize)
     }
 
     var body: some View {
@@ -309,7 +309,7 @@ struct EditableText: View {
             } else {
                 Text(self.text)
                     .lineLimit(1)
-                    .font(Font.custom(useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize))
+                    .font(Font.custom(useMonoFont ? .mono : .def, size: SizeConstants.fontSize))
                     .padding(.horizontal, SizeConstants.padding)
                     .frame(width: proxy.size.width, height: proxy.size.height, alignment: alignment)
                     .contentShape(Rectangle())
@@ -357,7 +357,7 @@ struct EditableMultilineText: View {
     }
 
     var body: some View {
-        TextArea(text: $textBuffer.text, height: $notifier.height, width: width - SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize), highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight)
+        TextArea(text: $textBuffer.text, height: $notifier.height, width: width - SizeConstants.padding, textColor: Colors.text, font: NSFont(name: useMonoFont ? .mono : .def, size: SizeConstants.fontSize), highlightedText: searchText, lineHeight: SizeConstants.fontLineHeight)
             .colorScheme(.dark)
             .frame(width: width - SizeConstants.padding, height: max(SizeConstants.listCellHeight, notifier.height))
     }

@@ -68,7 +68,9 @@ class VScrollBarController: ObservableObject {
 
         isUpdateFramePending = true
         DispatchQueue.main.asyncAfter(deadline: .now() + DispatchTimeInterval.milliseconds(100)) { [weak self] in
+            
             if let safeSelf = self {
+                safeSelf.isUpdateFramePending = false
                 safeSelf.updateFrame(contentHeight: safeSelf.pendingContentHeight, windowHeight: safeSelf.pendingWindowHeight)
             }
         }

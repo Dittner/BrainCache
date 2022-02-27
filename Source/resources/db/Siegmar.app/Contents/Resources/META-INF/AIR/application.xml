@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://ns.adobe.com/air/application/31.0">
+  <id>Siegmar</id>
+  <filename>Siegmar</filename>
+  <name>Siegmar</name>
+  <versionNumber>3.4</versionNumber>
+  <versionLabel>3.4</versionLabel>
+  <initialWindow>
+    <content>Siegmar.swf</content>
+    <minimizable>true</minimizable>
+    <maximizable>true</maximizable>
+    <resizable>true</resizable>
+    <width>2000</width>
+    <height>2000</height>
+    <minSize>1280 700</minSize>
+    <aspectRatio>landscape</aspectRatio>
+    <autoOrients>false</autoOrients>
+    <fullScreen>true</fullScreen>
+    <visible>true</visible>
+    <softKeyboardBehavior>none</softKeyboardBehavior>
+  </initialWindow>
+  <supportedProfiles>desktop</supportedProfiles>
+  <icon>
+    <image60x60>/icons/Siegmar-60.png</image60x60>
+    <image128x128>/icons/Siegmar-128.png</image128x128>
+  </icon>
+</application>
+

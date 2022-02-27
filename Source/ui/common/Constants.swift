@@ -37,8 +37,8 @@ class SizeConstants {
     static let appHeaderHeight: CGFloat = 25
     static let windowHeaderHeight: CGFloat = 20
     static let listCellHeight: CGFloat = 25
-    static let fontSize: CGFloat = 14
-    static let fontLineHeight: CGFloat = 21
+    static let fontSize: CGFloat = 16
+    static let fontLineHeight: CGFloat = 25
     static let iconSize: CGFloat = 12
     static let padding: CGFloat = 10
 }

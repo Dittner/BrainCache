@@ -35,7 +35,7 @@ class BrainCacheContext: ObservableObject {
 
         let migration = Migration(modelVersion: modelVersion, dispatcher: dispatcher)
         migration.migrateIfNecessary()
-        storage = FolderStorage(modelVersion: modelVersion, fileExtension: fileExtension, dispatcher: dispatcher)
+        storage = FolderStorage(modelVersion: modelVersion, fileExtension: fileExtension, dispatcher: dispatcher)        
     }
 
     static func logAbout(_ modelVersion: UInt) {

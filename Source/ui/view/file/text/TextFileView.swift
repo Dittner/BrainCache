@@ -45,7 +45,7 @@ struct TextFileBodyView: View {
         self.searchText = searchText
         self.width = width
         self.minHeight = minHeight
-        font = NSFont(name: useMonoFont ? .mono : .pragmatica, size: SizeConstants.fontSize)
+        font = NSFont(name: useMonoFont ? .mono : .def, size: SizeConstants.fontSize)
     }
 
     var body: some View {

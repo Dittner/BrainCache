@@ -63,6 +63,7 @@
 		5B4ECF8D261B3895000BB24A /* ListFileBodySerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4ECF8A261B3895000BB24A /* ListFileBodySerializer.swift */; };
 		5B4ECF8E261B3895000BB24A /* TableFileBodySerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4ECF8B261B3895000BB24A /* TableFileBodySerializer.swift */; };
 		5B4ECF96261B4E83000BB24A /* DTO_v3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4ECF90261B3B14000BB24A /* DTO_v3.swift */; };
+		5B7222D027CBBD220008779C /* db in Resources */ = {isa = PBXBuildFile; fileRef = 5B7222CF27CBBD220008779C /* db */; };
 		5B75DFD22610B3D8001013FF /* TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFD12610B3D8001013FF /* TableView.swift */; };
 		5B75DFD92610B47E001013FF /* TableController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFD82610B47E001013FF /* TableController.swift */; };
 		5B75DFDD2610B513001013FF /* ListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B75DFDC2610B513001013FF /* ListController.swift */; };
@@ -142,6 +143,7 @@
 		5B4ECF8A261B3895000BB24A /* ListFileBodySerializer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListFileBodySerializer.swift; sourceTree = "<group>"; };
 		5B4ECF8B261B3895000BB24A /* TableFileBodySerializer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableFileBodySerializer.swift; sourceTree = "<group>"; };
 		5B4ECF90261B3B14000BB24A /* DTO_v3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTO_v3.swift; sourceTree = "<group>"; };
+		5B7222CF27CBBD220008779C /* db */ = {isa = PBXFileReference; lastKnownFileType = folder; path = db; sourceTree = "<group>"; };
 		5B75DFD12610B3D8001013FF /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
 		5B75DFD52610B41D001013FF /* TextFileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFileView.swift; sourceTree = "<group>"; };
 		5B75DFD72610B450001013FF /* ListFileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListFileView.swift; sourceTree = "<group>"; };
@@ -311,6 +313,7 @@
 		5B3E16E12606021200D2CECC /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				5B7222CF27CBBD220008779C /* db */,
 				5B3E173526064CE800D2CECC /* fonts */,
 				5B3E16AD2605F28100D2CECC /* Assets.xcassets */,
 			);
@@ -507,6 +510,7 @@
 				5B3E174326064CF800D2CECC /* PT Mono.ttf in Resources */,
 				5B3E16B42605F28200D2CECC /* Main.storyboard in Resources */,
 				5B3E16B12605F28100D2CECC /* Preview Assets.xcassets in Resources */,
+				5B7222D027CBBD220008779C /* db in Resources */,
 				5B3E173E26064CF800D2CECC /* Pragmatica Light.otf in Resources */,
 				5B3E16AE2605F28100D2CECC /* Assets.xcassets in Resources */,
 				5B3E174026064CF800D2CECC /* Pragmatica Bold.otf in Resources */,
@@ -727,6 +731,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"Source/ui/Preview Content\"";
 				DEVELOPMENT_TEAM = F3QYFD9Z4F;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -737,6 +742,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = de.dittner.BrainCache;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -753,6 +759,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"Source/ui/Preview Content\"";
 				DEVELOPMENT_TEAM = F3QYFD9Z4F;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -763,6 +770,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = de.dittner.BrainCache;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

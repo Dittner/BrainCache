@@ -48,6 +48,22 @@ class TableFileBody: FileBody, ObservableObject {
     }
 
     private func sortRows() {
+        let headerTitle = headers[sortByHeaderIndex].title
+        var sortAsDigits = false
+        if headerTitle.count > 1 {
+            let index = headerTitle.index(headerTitle.endIndex, offsetBy: -2)
+            sortAsDigits = headerTitle[index...] == "/d"
+        }
+        
+        if sortAsDigits {
+            if sortType == .ascending {
+                rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text.firstDigits() < $1.cells[sortByHeaderIndex].text.firstDigits() })
+            } else {
+                rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text.firstDigits() > $1.cells[sortByHeaderIndex].text.firstDigits() })
+            }
+            return
+        }
+        
         if sortType == .ascending {
             rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text < $1.cells[sortByHeaderIndex].text })
         } else {

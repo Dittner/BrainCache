@@ -27,14 +27,15 @@ enum FontIcon: String {
 enum FontName: String {
     case icons = "BrainCacheIcons"
     case pragmatica = "PragmaticaBook-Reg"
-    case pragmaticaLight = "PragmaticaLight"
-    case pragmaticaLightItalics = "PragmaticaLight-Oblique"
-    case pragmaticaExtraLight = "PragmaticaExtraLight-Reg"
-    case pragmaticaExtraLightItalics = "PragmaticaExtraLight-Oblique"
-    case pragmaticaSemiBold = "PragmaticaMedium"
-    case pragmaticaBold = "PragmaticaBold-Reg"
+    //case pragmaticaLight = "PragmaticaLight"
+    //case pragmaticaLightItalics = "PragmaticaLight-Oblique"
+    //case pragmaticaExtraLight = "PragmaticaExtraLight-Reg"
+    //case pragmaticaExtraLightItalics = "PragmaticaExtraLight-Oblique"
+    //case pragmaticaSemiBold = "PragmaticaMedium"
+    //case pragmaticaBold = "PragmaticaBold-Reg"
     //case mono = "PTMono-Regular"
     case mono = "Menlo-Regular"
+    case def = "PragmaticaLight"
 }
 
 extension NSFont {

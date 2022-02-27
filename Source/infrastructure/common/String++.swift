@@ -36,6 +36,11 @@ extension String {
         return matches.count > 0 ? matches.first! : []
     }
 
+    func firstDigits() -> Int {
+        let matches = firstMatch(regex: "^(-?[0-9]+)")
+        return matches.count > 0 ? Int(matches.first!) ?? 0 : 0
+    }
+
     func indexesOf(string: String) -> [Int] {
         guard !string.isEmpty else { return [] }
 
