@@ -168,6 +168,7 @@ struct TextArea: NSViewRepresentable {
 
         textArea.textStorage?.addAttribute(NSAttributedString.Key.font, value: font, range: NSRange(location: 0, length: text.count))
         textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: textColor, range: NSRange(location: 0, length: text.count))
+        textArea.textStorage?.addAttribute(NSAttributedString.Key.backgroundColor, value: NSColor(rgb: 0x000000, alpha: 0.000001), range: NSRange(location: 0, length: text.count))
 
         let style = getStyle()
 
@@ -178,22 +179,27 @@ struct TextArea: NSViewRepresentable {
         if !highlightedText.isEmpty {
             let ranges = text.ranges(of: highlightedText, options: .caseInsensitive)
             for r in ranges {
-                textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
+                textArea.textStorage?.addAttribute(NSAttributedString.Key.backgroundColor, value: Colors.textHighlight, range: NSRange(r, in: highlightedText))
             }
         }
 
-        if text.count > 2, let regex = try? NSRegularExpression(pattern: "#(#| )+.*\n", options: .caseInsensitive) {
+        if text.count > 2, let regex = try? NSRegularExpression(pattern: "#+[^#].*\n", options: .caseInsensitive) {
             let t = text.substring(to: text.count - 1) + "\n"
             let nsString = t as NSString
             let results = regex.matches(in: t, options: [], range: NSMakeRange(0, nsString.length))
             results.forEach { result in
                 let r = result.range
                 if r.length > 1 {
-                    let tag = text[r.location + 1 ... r.location + 1]
-                    if tag == "#" {
+                    let tag3 = text[r.location ... r.location + 2]
+                    let tag2 = text[r.location ... r.location + 1]
+                    let tag1 = text[r.location ... r.location]
+                    if tag3 == "###" {
+                        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textBlack, range: NSRange(location: r.location, length: 3))
+                        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.header, range: NSRange(location: r.location + 3, length: r.length - 3))
+                    } else if tag2 == "##" {
                         textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textBlack, range: NSRange(location: r.location, length: 2))
-                        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.header, range: NSRange(location: r.location + 2, length: r.length - 2))
-                    } else if tag == " " {
+                        textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.subHeader, range: NSRange(location: r.location + 2, length: r.length - 2))
+                    } else if tag1 == "#" {
                         textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.textBlack, range: NSRange(location: r.location, length: 1))
                         textArea.textStorage?.addAttribute(NSAttributedString.Key.foregroundColor, value: Colors.comment, range: NSRange(location: r.location + 1, length: r.length - 1))
                     }

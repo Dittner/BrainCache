@@ -16,6 +16,7 @@ class Folder: DomainEntity, ObservableObject {
     @Published private(set) var isOpened: Bool = false
 
     private(set) var parent: Folder?
+    public var isDestroyed: Bool = false
 
     init(uid: UID, title: String, selectedFile: File? = nil, files: [File] = [], folders: [Folder] = [], isOpened: Bool = false, dispatcher: DomainEventDispatcher) {
         self.title = title
@@ -76,7 +77,7 @@ class Folder: DomainEntity, ObservableObject {
     }
 
     func update(selectedFile: File?) {
-        if self.selectedFile != selectedFile {
+        if self.selectedFile != selectedFile && selectedFile?.parent == self {
             self.selectedFile = selectedFile
             notifyStateDidChange()
         }

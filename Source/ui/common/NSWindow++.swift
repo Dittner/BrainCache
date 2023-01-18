@@ -1,5 +1,5 @@
 //
-//  NSColorExtension.swift
+//  NSWindow.swift
 //  BrainCache
 //
 //  Created by Alexander Dittner on 27.01.2020.
@@ -43,4 +43,6 @@ extension NSWindow {
 
 extension Notification.Name {
     static let didWheelScroll = Notification.Name("didWheelScroll")
+    static let didKeyDownScroll = Notification.Name("didKeyDownScroll")
+    static let didKeyDownSearch = Notification.Name("didKeyDownSearch")
 }

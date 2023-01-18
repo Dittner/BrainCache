@@ -57,9 +57,17 @@ class FolderListVM: ObservableObject {
 
         $selectedFile
             .compactMap { $0 }
-            .sink { _ in
+            .sink { f in
                 (NSApplication.shared.delegate as! AppDelegate).window?.makeFirstResponder(nil)
+                self.pushToStack(f: f)
             }.store(in: &disposeBag)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(onDidKeyDownSearch(_:)), name: .didKeyDownSearch, object: nil)
+    }
+
+    @objc func onDidKeyDownSearch(_ notification: Notification) {
+        EditableTextManager.shared.ownerUID = searchInputUID
+        EditableTextManager.shared.isEditing = true
     }
 
     var firstLaunch: Bool = true
@@ -126,11 +134,15 @@ class FolderListVM: ObservableObject {
     }
 
     func selectFile(_ f: File) {
-        filesAppService.selectFile(f)
+        if let folder = f.parent {
+            selectFolder(folder)
+            filesAppService.selectFile(f)
+        }
     }
 
     func destroyFile(_ f: File) {
         filesAppService.destroyFile(f)
+        destroyFileFromStack(f)
     }
 
     func updateFileFont(_ f: File, useMonoFont: Bool) {
@@ -139,5 +151,64 @@ class FolderListVM: ObservableObject {
 
     func deleteColumn(_ f: File, at index: Int) {
         filesAppService.deleteColumn(f, at: index)
+    }
+
+    //
+    // FileNavigator
+    //
+
+    private var filesStack: [File] = []
+    private var curFileIndex: Int = 0
+
+    public func pushToStack(f: File) {
+        if filesStack.count > 0 && filesStack[curFileIndex] == f { return }
+
+        if curFileIndex < filesStack.count - 1 {
+            filesStack = Array(filesStack[0 ... curFileIndex])
+        }
+
+        filesStack.append(f)
+        curFileIndex = filesStack.count - 1
+    }
+
+    public func canOpenPrev() -> Bool {
+        return curFileIndex > 0
+    }
+
+    public func canOpenNext() -> Bool {
+        return filesStack.count > curFileIndex + 1
+    }
+
+    public func openPrev() {
+        if canOpenPrev() {
+            curFileIndex -= 1
+            let f = filesStack[curFileIndex]
+            if let folder = f.parent, folder.isDestroyed {
+                filesStack.remove(at: curFileIndex)
+            } else {
+                selectFile(f)
+            }
+        }
+    }
+
+    public func openNext() {
+        if canOpenNext() {
+            curFileIndex += 1
+            let f = filesStack[curFileIndex]
+            if let folder = f.parent, folder.isDestroyed {
+                filesStack.remove(at: curFileIndex)
+            } else {
+                selectFile(f)
+            }
+        }
+    }
+
+    public func destroyFileFromStack(_ f: File) {
+        if filesStack[curFileIndex] == f {
+            filesStack.remove(at: curFileIndex)
+            if curFileIndex > 0 {
+                curFileIndex -= 1
+            }
+        }
     }
 }

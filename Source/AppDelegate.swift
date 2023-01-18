@@ -34,6 +34,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.contentView = AppHostingView(rootView: app)
         window.makeKeyAndOrderFront(nil)
         window.delegate = self
+
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
+            if self.keyDown(with: $0) {
+                return nil // needed to get rid of purr sound
+            } else {
+                return $0
+            }
+        }
+    }
+
+    private func keyDown(with event: NSEvent) -> Bool {
+        let hasCmd = event.modifierFlags.contains(.command)
+        switch event.keyCode {
+        case 121:
+            NotificationCenter.default.post(name: .didKeyDownScroll, object: -1)
+        case 116:
+            NotificationCenter.default.post(name: .didKeyDownScroll, object: 1)
+        case 3 where hasCmd:
+            NotificationCenter.default.post(name: .didKeyDownSearch, object: nil)
+        default:
+            return false
+        }
+
+        return true
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {

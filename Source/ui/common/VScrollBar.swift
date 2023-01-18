@@ -43,15 +43,21 @@ class VScrollBarController: ObservableObject {
         if debugInfo { logInfo(msg: "[VScrollBarController], new contentUID = \(contentUID): update, cached scrollPos = \(cachedPosition)") }
 
         NotificationCenter.default.addObserver(self, selector: #selector(onDidWheelScroll(_:)), name: .didWheelScroll, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onDidKeyDownScroll(_:)), name: .didKeyDownScroll, object: nil)
     }
 
     @objc func onDidWheelScroll(_ notification: Notification) {
         guard let event = notification.object as? NSEvent else { return }
         guard let windowFrame = (NSApplication.shared.delegate as! AppDelegate).window?.frame else { return }
 
-        if event.locationInWindow.x > SizeConstants.folderListWidth && windowFrame.height - event.locationInWindow.y > SizeConstants.appHeaderHeight + SizeConstants.windowHeaderHeight {
+        if event.locationInWindow.x > SizeConstants.folderListWidth && windowFrame.height - event.locationInWindow.y > SizeConstants.windowHeaderHeight {
             updateScrollPosition(with: event.deltaY * scrollFactor)
         }
+    }
+    
+    @objc func onDidKeyDownScroll(_ notification: Notification) {
+        guard let deltaY = notification.object as? CGFloat else { return }
+        updateScrollPosition(with: deltaY * 5 * scrollFactor)
     }
 
     private var isUpdateFramePending: Bool = false

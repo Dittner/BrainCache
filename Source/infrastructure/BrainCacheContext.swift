@@ -58,6 +58,5 @@ class BrainCacheContext: ObservableObject {
         logInfo(msg: aboutLog)
     }
 
-    func run() {
-    }
+    func run() {}
 }

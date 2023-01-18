@@ -54,7 +54,7 @@ class TableFileBody: FileBody, ObservableObject {
             let index = headerTitle.index(headerTitle.endIndex, offsetBy: -2)
             sortAsDigits = headerTitle[index...] == "/d"
         }
-        
+
         if sortAsDigits {
             if sortType == .ascending {
                 rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text.firstDigits() < $1.cells[sortByHeaderIndex].text.firstDigits() })
@@ -63,7 +63,7 @@ class TableFileBody: FileBody, ObservableObject {
             }
             return
         }
-        
+
         if sortType == .ascending {
             rows = rows.sorted(by: { $0.cells[sortByHeaderIndex].text < $1.cells[sortByHeaderIndex].text })
         } else {
@@ -97,7 +97,7 @@ class TableFileBody: FileBody, ObservableObject {
             let srcCell = row.cells.remove(at: fromIndex)
             row.cells.insert(srcCell, at: toIndex)
         }
-        
+
         if sortByHeaderIndex == toIndex {
             sortByHeaderIndex = fromIndex
         } else if sortByHeaderIndex == fromIndex {
@@ -152,5 +152,14 @@ class TableRow {
 
     init(cells: [TableCell]) {
         self.cells = cells
+    }
+
+    public func contains(text: String) -> Bool {
+        for cell in cells {
+            if cell.text.hasSubstring(text) {
+                return true
+            }
+        }
+        return false
     }
 }

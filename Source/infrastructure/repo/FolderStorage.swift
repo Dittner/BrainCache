@@ -72,6 +72,7 @@ class FolderStorage {
         folder.parent?.remove(folder)
         folder.files.forEach { destroy(file: $0) }
         folder.folders.forEach { destroy(folder: $0) }
+        folder.isDestroyed = true
         foldersRepo.remove(folder.uid)
     }
 }

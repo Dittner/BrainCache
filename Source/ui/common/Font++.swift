@@ -38,12 +38,6 @@ enum FontName: String {
     case def = "PragmaticaLight"
 }
 
-extension NSFont {
-    convenience init(name: FontName, size: CGFloat) {
-        self.init(name: name.rawValue, size: size)!
-    }    
-}
-
 extension Font {
     static func custom(_ name: FontName, size: CGFloat) -> Font {
         Font.custom(name.rawValue, size: size)
@@ -56,6 +50,12 @@ extension Font {
                 print("\(fontName)")
             }
         }
+    }
+}
+
+extension NSFont {
+    convenience init(name: FontName, size: CGFloat) {
+        self.init(name: name.rawValue, size: size)!
     }
 }
 

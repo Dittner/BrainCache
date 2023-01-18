@@ -22,6 +22,11 @@ struct TableFileView: View {
         tc = TableController(table: fileBody)
     }
 
+    func getFileBodyRows() -> [TableRow] {
+        let filter = FolderListVM.shared.search
+        return filter.count > 2 ? fileBody.rows.filter { $0.contains(text: filter) } : fileBody.rows
+    }
+
     func getCellWidth(header: TableHeader, rootWidth: CGFloat) -> CGFloat {
         header.ratio * (rootWidth - SizeConstants.tableRowNumberWidth - scrollerWidth)
     }
@@ -37,7 +42,7 @@ struct TableFileView: View {
 
             VScrollBar(uid: file.uid) {
                 VStack(alignment: .trailing, spacing: 0) {
-                    ForEach(fileBody.rows.enumeratedArray(), id: \.offset) { rowIndex, row in
+                    ForEach(getFileBodyRows().enumeratedArray(), id: \.offset) { rowIndex, row in
                         HStack(alignment: .top, spacing: 0) {
                             Text("\(rowIndex + 1)")
                                 .lineLimit(1)
@@ -57,7 +62,7 @@ struct TableFileView: View {
                         }.offset(y: -3)
                         HSeparatorView()
                     }
-                    
+
                     Spacer().frame(maxWidth: .infinity, maxHeight: 1)
 
                     TextButton(text: "Add Row", textColor: Colors.button.color, font: Font.custom(.pragmatica, size: SizeConstants.fontSize), padding: 5) {
